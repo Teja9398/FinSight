@@ -23,6 +23,7 @@ function App() {
           {!!token && <Navbar />}
           <Routes>
             <Route path="/" element={!!token ? <Dashboard /> : <Login />} />
+            <Route path="/dashboard" element = {!!token?<Dashboard/> :<Login/>}/>
             <Route
               path="/transactions"
               element={!!token ? <TransactionPage /> : <Login />}

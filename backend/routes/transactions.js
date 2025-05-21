@@ -51,19 +51,22 @@ function verifyToken(req, res, next) {
       }catch (err) {
             return res.status(401).send('Invalid Token');
       }
-      
+      console.log("req: ",req);
+      // req.userid = decoded.id;
       return next();
 }
  router.get('/get', verifyToken,async (req, res) => {
+      // console.log(req.user.id);
+      
       mongoose.connect('mongodb://localhost:27017/finsightDB')
       .then(() => {
             console.log('Connected to MongoDB');
       }).catch(err => {
             console.error('Error connecting to MongoDB', err.message);
       });
-      const transactions = await transactionModel.find();
+      const transactions = await transactionModel.find({userId: req.user.id});
       res.status(200).json(transactions);
-      console.log(transactions);
+      // console.log(transactions);
  })
  router.get('/get/:id', async (req, res) => {
       mongoose.connect('mongodb://localhost:27017/finsightDB')
@@ -77,6 +80,10 @@ function verifyToken(req, res, next) {
             return res.status(404).json({ message: 'Transaction not found' });
       }
       res.status(200).json(transaction);
+ })
+
+ router.put('/edit/:id', async (req, res) => {
+      
  })
 
 module.exports = router;

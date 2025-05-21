@@ -24,7 +24,7 @@ const categories = [
   "Healthcare",
   "Housing",
   "medical",
-  "other"
+  "other",
 ];
 
 function TransactionPage() {
@@ -32,6 +32,7 @@ function TransactionPage() {
   const token = localStorage.getItem("token");
   const [checkAll, setCheckAll] = useState(false);
   const [checkedItems, setCheckedItems] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
 
   // console.log("token:", token);
 
@@ -112,6 +113,11 @@ function TransactionPage() {
     }
   };
 
+  const handleEditChange = (index, field, value) => {
+    const updated = [...transactions];
+    updated[index] = { ...updated[index], [field]: value };
+    setTransactions(updated);
+  };
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -174,7 +180,7 @@ function TransactionPage() {
       <TableContainer component={Paper}>
         <Table>
           <TableHead style={{ backgroundColor: "lightblue" }}>
-            <TableRow>
+            <TableRow sx={{fontWeight: "bold"}}>
               <TableCell>Date</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Category</TableCell>
@@ -190,10 +196,65 @@ function TransactionPage() {
           <TableBody>
             {transactions.map((txn, index) => (
               <TableRow key={index}>
-                <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
-                <TableCell>{txn.note}</TableCell>
-                <TableCell>{txn.category}</TableCell>
-                <TableCell>{txn.amount}</TableCell>
+                <TableCell>
+                  {editIndex === index ? (
+                    <TextField
+                      type="date"
+                      value={txn.date.split("T")[0]}
+                      onChange={(e) =>
+                        handleEditChange(index, "date", e.target.value)
+                      }
+                    ></TextField>
+                  ) : (
+                    new Date(txn.date).toLocaleDateString()
+                  )}
+                </TableCell>
+
+                <TableCell>
+                  {editIndex === index ? (
+                    <TextField
+                      value={txn.note}
+                      onChange={(e) =>
+                        handleEditChange(index, "note", e.target.value)
+                      }
+                    ></TextField>
+                  ) : (
+                    txn.note
+                  )}
+                </TableCell>
+
+                <TableCell>
+                  {editIndex === index ? (
+                    <TextField
+                      select
+                      value={txn.category}
+                      onChange={(e) =>
+                        handleEditChange(index, "category", e.target.value)}
+                    >
+                      {categories.map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                          {cat}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    txn.category
+                  )}
+                </TableCell>
+
+                <TableCell>
+                  {editIndex === index ? (
+                    <TextField
+                      value={txn.amount}
+                      onChange={(e) =>
+                        handleEditChange(index, "amount", e.target.value)
+                      }
+                    ></TextField>
+                  ) : (
+                    txn.amount
+                  )}
+                </TableCell>
+
                 <TableCell>
                   <Checkbox
                     checked={checkedItems[index] || false}
@@ -228,13 +289,29 @@ function TransactionPage() {
             onClick={() => {
               const selectedIndex = checkedItems.findIndex((v) => v === true);
               if (selectedIndex !== -1) {
-                console.log("Edit transaction:", transactions[selectedIndex]);
+                // console.log("Edit transaction:", transactions[selectedIndex]);
                 // Add your edit logic here
+                setEditIndex(selectedIndex);
               }
             }}
           >
             Edit
           </Button>
+
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ mr: 2 }}
+            disabled={editIndex === null}
+            onClick={() => {
+              console.log("Saved:", transactions[editIndex]);
+              
+              setEditIndex(null);
+            }}
+          >
+            Save
+          </Button>
+
           <Button
             variant="contained"
             color="error"
@@ -243,7 +320,7 @@ function TransactionPage() {
               const remainingTransactions = transactions.filter(
                 (_, idx) => !checkedItems[idx]
               );
-              setTransactions(remainingTransactions);
+              setTransactions(remainingTransactions); 
               setCheckedItems(Array(remainingTransactions.length).fill(false));
             }}
           >
