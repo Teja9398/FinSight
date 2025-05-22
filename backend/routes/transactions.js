@@ -51,7 +51,7 @@ function verifyToken(req, res, next) {
       }catch (err) {
             return res.status(401).send('Invalid Token');
       }
-      console.log("req: ",req);
+      // console.log("req: ",req);
       // req.userid = decoded.id;
       return next();
 }
@@ -64,7 +64,7 @@ function verifyToken(req, res, next) {
       }).catch(err => {
             console.error('Error connecting to MongoDB', err.message);
       });
-      const transactions = await transactionModel.find({userId: req.user.id});
+      const transactions = await transactionModel.find({userId:req.user.id}).sort({ date: -1 });
       res.status(200).json(transactions);
       // console.log(transactions);
  })

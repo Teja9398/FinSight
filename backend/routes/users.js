@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
             const isMatch = await bcrypt.compare(data.passwordHash,userExists.passwordHash);
             if (isMatch) {
                   const token = jwt.sign({ id: userExists._id,email:data.email }, "Access125");
-                  res.status(200).send({message:'Login successful',token:token});
+                  res.status(200).send({message:'Login successful',token:token,userId:userExists._id});
             }
             else {
                   res.status(400).send('Invalid password');

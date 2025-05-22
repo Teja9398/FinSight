@@ -34,14 +34,14 @@ function Navbar() {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
-    if (settings[3] === 'Logout') {
+    if (setting === 'Logout') {
       localStorage.removeItem('token');
-      navigate('/login'); 
       alert('Logged out successfully');
+      window.location.href = '/login';
     }
-    if(settings[2] === 'Dashboard') {
+    if(setting === 'Dashboard') {
       navigate('/dashboard');
     }
 
@@ -157,7 +157,7 @@ function Navbar() {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem key={setting} onClick={() => handleCloseUserMenu(setting)}>
                   <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                 </MenuItem>
               ))}

@@ -35,6 +35,7 @@ const handleSubmit = (e) => {
                   // Redirect to dashboard or handle login success
                   if(data.token){
                         localStorage.setItem('token', data.token);
+                        localStorage.setItem('userId', data.userId);
                         alert('Login successful');
                         window.location.href = '/';
                   }

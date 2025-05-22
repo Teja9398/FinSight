@@ -75,6 +75,7 @@ function TransactionPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date: formData.date,
+          userId: localStorage.getItem("userId"),
           note: formData.description,
           type: formData.category === "Income" ? "income" : "expense",
           source: "manual",
