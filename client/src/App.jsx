@@ -15,10 +15,10 @@ function App() {
   const token = localStorage.getItem("token");
 
   return (
-      <Container
-        component="root"
-        sx={{ minWidth: "100vw", bgcolor: "#f5f5f5", minHeight: "100vh" }}
-      >
+      // <Container
+      //   component="root"
+      //   sx={{ minWidth: "100vw", bgcolor: "#f5f5f5", minHeight: "100vh" }}
+      // >
         <Router>
           {!!token && <Navbar />}
           <Routes>
@@ -32,7 +32,6 @@ function App() {
             <Route path="/signup" element={<Signup />} />
           </Routes>
         </Router>
-      </Container>
   );
 }
 

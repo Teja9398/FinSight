@@ -22,7 +22,7 @@ const categories = [
   "Entertainment",
   "Utilities",
   "Healthcare",
-  "Housing",
+  "Food and drinks",
   "medical",
   "other",
 ];
@@ -119,6 +119,47 @@ function TransactionPage() {
     updated[index] = { ...updated[index], [field]: value };
     setTransactions(updated);
   };
+  const handleSaveTransaction = (transaction) => {
+    fetch(`http://localhost:5000/transactions/update/${(transaction._id).toString()}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: transaction._id,
+        date: transaction.date,
+        note: transaction.note,
+        category: transaction.category,
+        amount: parseFloat(transaction.amount),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Transaction updated:", data);
+        setCheckedItems(Array(remainingTransactions.length).fill(false));
+
+      })
+      .catch((error) => {
+        console.error("Error updating transaction:", error);
+      });
+  }
+  const handleDeleteTransaction = (index) => {
+     fetch("http://localhost:5000/transactions/delete", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  ids: transactions
+                    .filter((_, idx) => checkedItems[idx])
+                    .map((txn) => txn._id),
+                }),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("Transaction deleted:", data);
+                })
+                .catch((error) => {
+                  console.error("Error deleting transaction:", error);
+                });
+  };
+
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -291,7 +332,6 @@ function TransactionPage() {
               const selectedIndex = checkedItems.findIndex((v) => v === true);
               if (selectedIndex !== -1) {
                 // console.log("Edit transaction:", transactions[selectedIndex]);
-                // Add your edit logic here
                 setEditIndex(selectedIndex);
               }
             }}
@@ -305,8 +345,8 @@ function TransactionPage() {
             sx={{ mr: 2 }}
             disabled={editIndex === null}
             onClick={() => {
-              console.log("Saved:", transactions[editIndex]);
-              
+              console.log("Saved:", transactions[editIndex]),
+              handleSaveTransaction(transactions[editIndex]);
               setEditIndex(null);
             }}
           >
@@ -321,9 +361,13 @@ function TransactionPage() {
               const remainingTransactions = transactions.filter(
                 (_, idx) => !checkedItems[idx]
               );
+              if(confirm("Are you sure you want to delete?")){
               setTransactions(remainingTransactions); 
-              setCheckedItems(Array(remainingTransactions.length).fill(false));
-            }}
+             
+              handleDeleteTransaction();
+            }else{
+               setCheckedItems(Array(remainingTransactions.length).fill(false))
+            }}}
           >
             Delete
           </Button>

@@ -82,8 +82,34 @@ function verifyToken(req, res, next) {
       res.status(200).json(transaction);
  })
 
- router.put('/edit/:id', async (req, res) => {
-      
+ router.put('/update/:id', async (req, res) => {
+      mongoose.connect('mongodb://localhost:27017/finsightDB')
+      .then(() => {
+            console.log('Connected to MongoDB');
+      }).catch(err => {
+            console.error('Error connecting to MongoDB', err.message);
+      });
+      const transaction = await transactionModel.findByIdAndUpdate(req.params.id, req.body, { new: true }); 
+      if (!transaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
+      }else{
+            res.status(200).json({ message: 'Transaction updated successfully' });
+      }
+ })
+
+ router.delete('/delete',async (req, res) => {
+      mongoose.connect('mongodb://localhost:27017/finsightDB')
+      .then(() => {
+            console.log('Connected to MongoDB');
+      }).catch(err => {
+            console.error('Error connecting to MongoDB', err.message);
+      });
+     const transaction = await transactionModel.deleteMany({ _id: { $in: req.body.ids } });
+      if (!transaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
+      }else{
+            res.status(200).json({ message: 'Transaction deleted successfully' });
+      }
  })
 
 module.exports = router;
