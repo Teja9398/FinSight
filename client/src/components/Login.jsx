@@ -19,7 +19,6 @@ const handleChange = (e) => {
 
 const handleSubmit = (e) => {
       e.preventDefault();
-      // Handle login logic here
       console.log(form);
       fetch('http://localhost:5000/users/login', {
             method: 'POST',
@@ -32,7 +31,6 @@ const handleSubmit = (e) => {
             .then((response) => response.json())
             .then((data) => {
                   console.log('Login successful:', data);
-                  // Redirect to dashboard or handle login success
                   if(data.token){
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('userId', data.userId);
