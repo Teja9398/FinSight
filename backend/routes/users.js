@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { userModel } = require('./schemas');
+const verifyToken = require('../middlewares/verifyToken');
 const url = 'mongodb://localhost:27017/finsightDB';
 require('dotenv').config();
 
@@ -43,20 +44,20 @@ router.post('/register', async (req, res) => {
       }
 });
 
-function verifyToken(req, res, next) {
-      const token = req.headers.authorization;
-      if (!token) {
-            return res.status(403).send('A token is required for authentication');
-      }
-      try {
-            const decoded = jwt.verify(token, "Access125");
-            console.log(decoded);
-            req.user = decoded;
-      } catch (err) {
-            return res.status(401).send('Invalid Token');
-      }
-      return next();
-}
+// function verifyToken(req, res, next) {
+//       const token = req.headers.authorization;
+//       if (!token) {
+//             return res.status(403).send('A token is required for authentication');
+//       }
+//       try {
+//             const decoded = jwt.verify(token, "Access125");
+//             console.log(decoded);
+//             req.user = decoded;
+//       } catch (err) {
+//             return res.status(401).send('Invalid Token');
+//       }
+//       return next();
+// }
 
 router.post('/login', async (req, res) => {
       const data = req.body;
@@ -72,7 +73,7 @@ router.post('/login', async (req, res) => {
             const isMatch = await bcrypt.compare(data.passwordHash,userExists.passwordHash);
             if (isMatch) {
                   const token = jwt.sign({ id: userExists._id,email:data.email }, "Access125");
-                  res.status(200).send({message:'Login successful',token:token,userId:userExists._id});
+                  res.status(200).send({message:'Login successful',token:token,userId:userExists._id}); 
             }
             else {
                   res.status(400).send('Invalid password');

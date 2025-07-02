@@ -1,0 +1,444 @@
+import React, { useEffect, useState } from "react";
+import {
+  Typography,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  Container,
+  useMediaQuery,
+  useTheme,
+  Table,
+  Box,
+} from "@mui/material";
+import {
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Chip,
+} from "@mui/material";
+import { Margin, MoreVert } from "@mui/icons-material";
+
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
+
+
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
+import WorkIcon from "@mui/icons-material/Work";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+
+
+const categories = [
+  "Income",
+  "Groceries and Utilities",
+  "Transportation",
+  "Medical & Healthcare",
+  "Food and drinks",
+  "other",
+];
+
+const getCategoryIcon = (category) => {
+  switch (category) {
+    case "Food and drinks":
+    case "Food":
+      return <RestaurantIcon />;
+    case "Transportation":
+    case "Transport":
+      return <LocalGasStationIcon />;
+    case "Salary":
+    case "Income":
+      return <WorkIcon />;
+    case "Medical & Healthcare":
+      return <LocalHospitalIcon />;
+    case "Groceries and Utilities":
+      return <ShoppingCartIcon />;
+    default:
+      return <AttachMoneyIcon />;
+  }
+};
+
+function Dashboard({transactionsData}) {
+  const [data, setData] = useState([
+    { amount: 200, category: "Food" },
+    { amount: 300, category: "Transport" },
+  ]);
+
+  const [recentTransactions, setRecentTransactions] = useState(transactionsData.slice(0, 5));
+  const [lineData, setLineData] = useState();
+  const [incomeData, setIncomeData] = useState();
+  const [expenseData, setExpenseData] = useState();
+
+  const filledLineData = (lineData || []).map((d) => ({
+    ...d,
+    income: d.income ?? 0,
+    expenses: d.expenses ?? 0,
+  }));
+
+  const summary = [
+    "Total Income this Month",
+    "Total Expenses this month",
+    "Balance This month",
+    "Net Balance (Overall)",
+  ];
+  const [summaryData, setSummaryData] = useState({
+    income: 0,
+    expense: 0,
+  });
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8377c7"];
+  const [NetBalance, SetNetBalance] = useState(0);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  useEffect(() => {
+
+    fetch(`http://localhost:5000/transactions/getbycat`, {
+      headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log("data from /getbycat", data);
+        setData(data);
+      });
+
+    fetch(`http://localhost:5000/transactions/getincomeandexp`, {
+      headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log("line data:", data);
+        setLineData(data);
+      });
+
+    fetch(`http://localhost:5000/transactions/totalincomeandexpenses`, {
+      headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log("summary data: ",data);
+        setSummaryData(data);
+      });
+    fetch(`http://localhost:5000/transactions/getnetbalance`, {
+      headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        SetNetBalance(data.netbalance);
+      });
+  }, []);
+
+  useEffect(() => {
+    setRecentTransactions(transactionsData.slice(0, 5));
+  },[transactionsData]);
+
+  return (
+    <Box
+      sx={{
+        ml: { xs: 0, md: 0 }, // Remove left margin
+        display: "flex",
+        flexDirection: "column",
+        alignItems: { xs: "center", md: "stretch" }, // Center on mobile
+      }}
+    >
+      <Typography
+        variant="h4"
+        fontWeight={700}
+        sx={{ mb: 0.5, textAlign: { xs: "center", md: "left" } }}
+      >
+        Dashboard
+      </Typography>
+      <Typography
+        variant="subtitle1"
+        color="text.secondary"
+        sx={{ mb: 2, textAlign: { xs: "center", md: "left" } }}
+      >
+        Welcome back! Here's your financial overview.
+      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+          mb: 4,
+          alignItems: { xs: "center", md: "stretch" }, // Center cards on mobile
+        }}
+      >
+        {summary.map((item, index) => (
+          <Card
+            key={index}
+            sx={{
+              flex: 1,
+              minWidth: 180,
+              p: 2,
+              boxShadow: 2,
+              borderRadius: 3,
+              bgcolor: "#fff",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              height: 90,
+              mx: { xs: "auto", md: 0 }, // Center card horizontally on mobile
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              color="text.secondary"
+              sx={{ mb: 1 }}
+            >
+              {item}
+            </Typography>
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              sx={{
+                color: index === 0 ? "Blue" : index === 1 ? "#FF9800" : "green",
+              }}
+            >
+              ₹
+              {index === 0
+                ? summaryData.income?summaryData.income
+                : 0
+                : index === 1
+                ? summaryData.expense? summaryData.expense
+                : 0
+                : index === 2
+                ? summaryData.income - summaryData.expense
+                : NetBalance} 
+            </Typography>
+          </Card>
+        ))}
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 3,
+          mb: 2,
+          alignItems: { xs: "center", md: "stretch" }, // Center charts on mobile
+        }}
+      >
+        <Card
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+            mx: { xs: "auto", md: 0 }, // Center card horizontally on mobile
+            mb: 2,
+            p: 2,
+            boxShadow: 3,
+            borderRadius: 4,
+            bgcolor: "white",
+          }}
+        >
+          <Typography
+            variant="h6"
+            align="left"
+            fontWeight="bold"
+            sx={{ mb: 2, textAlign: { xs: "center", md: "left" } }}
+          >
+            Expenses by Category
+          </Typography>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Tooltip />
+              <Legend
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+              />
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                outerRadius={60}
+                dataKey="amount"
+                nameKey="_id"
+              >
+                {data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+        <Card
+          sx={{
+            width: "100%",
+            maxHeight:250,
+            maxWidth: 400,
+            mx: { xs: "auto", md: 0 }, // Center card horizontally on mobile
+            p: 2,
+            boxShadow: 3,
+            borderRadius: 4,
+            bgcolor: "white",
+          }}
+        >
+          <Typography
+            variant="h6"
+            align="left"
+            fontWeight="bold"
+            sx={{ mb: 2, textAlign: { xs: "center", md: "left" } }}
+          >
+            Income vs Expenses
+          </Typography>
+          <ResponsiveContainer width="100%" height={200}>
+            {filledLineData.length!=0  &&(
+            <LineChart data={filledLineData}>
+              <CartesianGrid />
+              <Tooltip
+                formatter={(value, name, props) => [value, name]}
+                labelFormatter={(label, payload) => {
+                  if (
+                    payload &&
+                    payload.length > 0 &&
+                    payload[0].payload &&
+                    payload[0].payload.category
+                  ) {
+                    return payload[0].payload.category;
+                  }
+                  return label;
+                }}
+              />
+              <Legend />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(date) => {
+                  const d = new Date(date);
+                  const day = d.getDate();
+                  const month = d.toLocaleString("default", { month: "short" });
+                  const getOrdinal = (n) => {
+                    if (n > 3 && n < 21) return "th";
+                    switch (n % 10) {
+                      case 1:
+                        return "st";
+                      case 2:
+                        return "nd";
+                      case 3:
+                        return "rd";
+                      default:
+                        return "th";
+                    }
+                  };
+                  return `${day}${getOrdinal(day)} ${month}`;
+                }}
+              />
+              <YAxis />
+              <Line
+                type="monotone"
+                strokeWidth={3}
+                dataKey={"income"}
+                nameKey="category"
+                stroke="blue"
+              />
+              <Line
+                type="monotone"
+                strokeWidth={3}
+                dataKey={"expenses"}
+                nameKey="category"
+                stroke="red"
+              />
+            </LineChart>
+            ) || <Typography sx={{m:9,ml:15}}>No data available</Typography>}
+          </ResponsiveContainer>
+        </Card>
+      </Box>
+      <Card
+        sx={{
+          boxShadow: 3,
+          borderRadius: 4,
+          bgcolor: "white",
+          mx: { xs: "auto", md: 0 }, // Center card horizontally on mobile
+          width: { xs: "100%", md: "auto" },
+        }}
+      >
+        <CardContent>
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, textAlign: { xs: "center", md: "left" } }}
+          >
+            Recent Transactions
+          </Typography>
+          <List sx={{ py: 0 }}>
+            {recentTransactions.map((transaction, index) => (
+              <ListItem
+                key={index}
+                sx={{
+                  px: 3,
+                  borderBottom:
+                    index < recentTransactions.length - 1
+                      ? "1px solidrgb(23, 23, 23)"
+                      : "none",
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  {getCategoryIcon(transaction.category)}
+                </ListItemIcon>
+                <ListItemText
+                  primary={transaction.note}
+                  secondary={
+                    <Box
+                      component={"span"}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "start",
+                        gap: 1,
+                        mt: 0.5,
+                      }}
+                    >
+                      <Chip
+                        component="span"
+                        label={transaction.category}
+                        size="small"
+                        sx={{ fontSize: "0.7rem", height: 20 }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {transaction.date.toString().split("T")[0]}
+                      </Typography>
+                    </Box>
+                  }
+                />
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 600,
+                    color:
+                      transaction.type === "income"
+                        ? "success.main"
+                        : "error.main",
+                    mr: 1,
+                  }}
+                >
+                  {transaction.type === "income" ? "+" : "-"}₹
+                  {transaction.amount.toFixed(2)}
+                </Typography>
+              </ListItem>
+            ))}
+          </List>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+}
+
+export default Dashboard;

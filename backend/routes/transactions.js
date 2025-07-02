@@ -3,60 +3,51 @@ var router = express.Router();
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { transactionModel } = require("./schemas");
-require("dotenv").config();
-// const cors = require('cors');
+const verifyToken = require("../middlewares/verifyToken.js");
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
-// router.use(cors({origin: 'http://localhost:5173'}));
 
 /* GET home page. */
 router.get("/", function (req, res) {
-  console.log(req.body);
-
+  // console.log(req.body);
+  // console.log("User from token:", req.user);
   res.json({ message: "Welcome to the Transactions API" });
 });
 
-router.post("/add", async (req, res) => {
+router.get("/test-authentication",verifyToken, (req, res) => {
+  // console.log("User from token:", req.user);
+  res.json({ message: "This is a test route", user: req.user });
+})
+
+router.post("/add",verifyToken,async (req, res) => {
   const data = req.body;
-  console.log(data);
+  data["userId"] = req.user.id; // Add userId from the token
+  // console.log(data);
+  // res.send(data);
   mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+  .connect("mongodb://localhost:27017/finsightDB")
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB", err.message);
+  });
   const transaction = new transactionModel(data);
   transaction
     .save()
     .then((saved) => {
       console.log("Transaction saved successfully: ");
+      console.log("Saved Transaction: ",saved);
       res.status(201).json({ message: "Transaction added successfully",transaction:saved });
     })
     .catch((err) => {
       console.error("Error saving transaction", err.message);
       res.status(500).json({ message: "Error saving transaction" });
     });
+
 });
-function verifyToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  // console.log(token);
-  if (!token) {
-    return res.status(403).send("A token is required for authentication");
-  }
-  try {
-    const decoded = jwt.verify(token, "Access125");
-    // console.log("DECODED:",decoded);
-    req.user = decoded;
-  } catch (err) {
-    return res.status(401).send("Invalid Token");
-  }
-  // console.log("req: ",req);
-  // req.userid = decoded.id;
-  return next();
-}
+
+
 router.get("/get", verifyToken, async (req, res) => {
   // console.log(req.user.id);
 
@@ -75,7 +66,7 @@ router.get("/get", verifyToken, async (req, res) => {
   // console.log(transactions);
 });
 
-router.get("/get/:id", async (req, res) => {
+router.get("/get/:id", verifyToken,async (req, res) => {
   mongoose
     .connect("mongodb://localhost:27017/finsightDB")
     .then(() => {
@@ -91,7 +82,8 @@ router.get("/get/:id", async (req, res) => {
   res.status(200).json(transaction);
 });
 
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id",verifyToken,async (req, res) => {
+  console.log("Update request body:", req.body);
   mongoose
     .connect("mongodb://localhost:27017/finsightDB")
     .then(() => {
@@ -112,7 +104,7 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
-router.delete("/delete", async (req, res) => {
+router.delete("/delete",verifyToken, async (req, res) => {
   mongoose
     .connect("mongodb://localhost:27017/finsightDB")
     .then(() => {
@@ -144,7 +136,7 @@ router.get("/gettest", async (req, res) => {
   res.status(200).json(transactions);
 });
 
-router.get("/getbycat/:id", async (req, res) => {
+router.get("/getbycat",verifyToken,async (req, res) => {
   mongoose
     .connect("mongodb://localhost:27017/finsightDB")
     .then(() => {
@@ -156,7 +148,7 @@ router.get("/getbycat/:id", async (req, res) => {
   const data = await transactionModel.aggregate([
     {
       $match: {
-        userId: new mongoose.Types.ObjectId(req.params.id),
+        userId: new mongoose.Types.ObjectId(req.user.id),
         type: "expense", // filtering by expense type
       },
     },
@@ -171,7 +163,7 @@ router.get("/getbycat/:id", async (req, res) => {
   res.send(data);
 });
 
-router.get("/totalincomeandexpenses/:id",async(req,res)=>{
+router.get("/totalincomeandexpenses",verifyToken,async(req,res)=>{
   mongoose.connect("mongodb://localhost:27017/finsightDB")
   .then(()=>{
     console.log("Connected to DB")
@@ -187,7 +179,7 @@ router.get("/totalincomeandexpenses/:id",async(req,res)=>{
         const data = await transactionModel.aggregate([
           {
             $match: {
-              userId: new mongoose.Types.ObjectId(req.params.id),
+              userId: new mongoose.Types.ObjectId(req.user.id),
               date: { $gte: startOfMonth, $lte: endOfMonth }
             }
           },
@@ -201,10 +193,10 @@ router.get("/totalincomeandexpenses/:id",async(req,res)=>{
             $project:{
               _id:0,
               income:{
-                $cond:[{$eq:['$_id.type','income']},'$amount',null]
+                $cond:[{$eq:['$_id.type','income']},'$amount',0]
               },
               expense:{
-                $cond:[{$eq:['$_id.type','expense']},'$amount',null]
+                $cond:[{$eq:['$_id.type','expense']},'$amount',0]
                 }
               }
             }
@@ -226,7 +218,7 @@ router.get("/totalincomeandexpenses/:id",async(req,res)=>{
       }
 })
 
-router.get("/getincomeandexp/:id", async (req, res) => {
+router.get("/getincomeandexp",verifyToken ,async (req, res) => {
   mongoose
     .connect("mongodb://localhost:27017/finsightDB")
     .then(() => {
@@ -252,7 +244,7 @@ router.get("/getincomeandexp/:id", async (req, res) => {
     const data = await transactionModel.aggregate([
       {
         $match: { 
-          userId: new mongoose.Types.ObjectId(req.params.id),
+          userId: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startOfMonth, $lte: endOfMonth },
          },
         
@@ -306,7 +298,7 @@ router.get("/getincomeandexp/:id", async (req, res) => {
   }
 });
 
-router.get('/getnetbalance/:id',async (req,res)=>{
+router.get('/getnetbalance',verifyToken,async (req,res)=>{
   console.log("Header: ",req.user);
   
   mongoose.connect('mongodb://localhost:27017/finsightDB')
@@ -319,7 +311,7 @@ router.get('/getnetbalance/:id',async (req,res)=>{
     const data = await transactionModel.aggregate([
       {
         $match: {
-          userId:new mongoose.Types.ObjectId(req.params.id),
+          userId:new mongoose.Types.ObjectId(req.user.id),
         }
       },
       {
@@ -346,4 +338,5 @@ router.get('/getnetbalance/:id',async (req,res)=>{
     res.send({message:`an error occured: ${error}`,})
   }
 })
-module.exports = router;
+
+module.exports = router; 

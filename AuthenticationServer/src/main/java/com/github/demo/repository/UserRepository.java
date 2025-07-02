@@ -1,7 +1,11 @@
 package com.github.demo.repository;
 
-import com.github.demo.model.User;
+import com.github.demo.model.Users;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UserRepository extends MongoRepository<User,String> {
+@Repository
+public interface UserRepository extends MongoRepository<Users,String> {
+    Users findUsersByUsername(String name);
+    Users findUserByEmail(String email);
 }

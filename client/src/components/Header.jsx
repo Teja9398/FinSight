@@ -13,11 +13,12 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { Navigate, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const pages = [{name:'Dashboard',path:'/dashboard'}, {name:'Transactions',path:'/transactions'}, {name:'Reports',path:'/reports'}];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Profile', 'Logout'];
 
-function Navbar() {
+function Header() {
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -38,20 +39,17 @@ function Navbar() {
     setAnchorElUser(null);
     if (setting === 'Logout') {
       localStorage.removeItem('token');
-      alert('Logged out successfully');
+      // alert('Logged out successfully');
+      toast.success('Logged out successfully');
       window.location.href = '/login';
-    }
-    if(setting === 'Dashboard') {
-      navigate('/dashboard');
     }
 
   };
 
   return (
-    <AppBar position="static">
-      <Container maxWidth="100vw">
-        <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+    <AppBar position="static" sx={{ minHeight: 48, backgroundColor: '#3a8dde',display:{xs:"none" ,md:"flex"}}}>
+      <Container maxWidth="100vw" >
+        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 48, minHeight: { xs: 48, sm: 56 } }}>
           <Typography
             variant="h6"
             noWrap
@@ -67,45 +65,45 @@ function Navbar() {
               textDecoration: 'none',
             }}
           >
-            FINSIGHT
+            FINSIGHT 
           </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page.name} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page.name}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-          <Typography
+            {/* <Box sx={{ flexGrow: 1, border:'10px solid red',display: { xs: 'flex', md: 'none', justifyContent:"space-between" } }}>
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleOpenNavMenu}
+                color="inherit"
+              >
+                <MenuIcon />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorElNav}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'left',
+                }}
+                open={Boolean(anchorElNav)}
+                onClose={handleCloseNavMenu}
+                sx={{ display: { xs: 'block', md: 'none' } }}
+              >
+                {pages.map((page) => (
+                  <MenuItem key={page.name} onClick={handleCloseNavMenu}>
+                    <Typography sx={{ textAlign: 'center' }}>{page.name}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box> */}
+          {/* <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} /> */}
+          {/* <Typography
             variant="h5"
             noWrap
             component="a"
@@ -122,8 +120,8 @@ function Navbar() {
             }}
           >
             LOGO
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          </Typography> */}
+          {/* <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
                 key={page.name}
@@ -133,7 +131,9 @@ function Navbar() {
                 {page.name}
               </Button>
             ))}
-          </Box>
+          </Box> */}
+
+          {/* profileIcon */}
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -168,4 +168,4 @@ function Navbar() {
     </AppBar>
   );
 }
-export default Navbar;
+export default Header;
