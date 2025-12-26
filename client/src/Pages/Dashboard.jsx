@@ -41,6 +41,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useAuth } from "../contexts/AuthContext";
 
 
 const categories = [
@@ -73,6 +74,7 @@ const getCategoryIcon = (category) => {
 };
 
 function Dashboard({transactionsData}) {
+  const {user} = useAuth();
   const [data, setData] = useState([
     { amount: 200, category: "Food" },
     { amount: 300, category: "Transport" },
@@ -90,10 +92,8 @@ function Dashboard({transactionsData}) {
   }));
 
   const summary = [
-    "Total Income this Month",
     "Total Expenses this month",
     "Balance This month",
-    "Net Balance (Overall)",
   ];
   const [summaryData, setSummaryData] = useState({
     income: 0,
@@ -131,7 +131,7 @@ function Dashboard({transactionsData}) {
     })
       .then((response) => response.json())
       .then((data) => {
-        // console.log("summary data: ",data);
+        console.log("summary data: ",data);
         setSummaryData(data);
       });
     fetch(`http://localhost:5000/transactions/getnetbalance`, {
@@ -168,7 +168,7 @@ function Dashboard({transactionsData}) {
         color="text.secondary"
         sx={{ mb: 2, textAlign: { xs: "center", md: "left" } }}
       >
-        Welcome back! Here's your financial overview.
+        Welcome back {user && user.name ? user.name : ""}! Here's your financial overview.
       </Typography>
       <Box
         sx={{
@@ -184,7 +184,7 @@ function Dashboard({transactionsData}) {
             key={index}
             sx={{
               flex: 1,
-              minWidth: 180,
+              minWidth: 100,
               p: 2,
               boxShadow: 2,
               borderRadius: 3,
@@ -213,24 +213,94 @@ function Dashboard({transactionsData}) {
               }}
             >
               ₹
-              {index === 0
-                ? summaryData.income?summaryData.income
-                : 0
-                : index === 1
+              {
+                index === 0
                 ? summaryData.expense? summaryData.expense
                 : 0
-                : index === 2
+                : index === 1
                 ? summaryData.income - summaryData.expense
                 : NetBalance} 
             </Typography>
           </Card>
         ))}
       </Box>
+      <Card 
+        sx={{
+          width: "100%",
+          maxWidth: 850,
+          mx: { xs: "auto", md: 0 },
+          mb: 3,
+          p: 2,
+          boxShadow: 3,
+          borderRadius: 4,
+          bgcolor: "white",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          alignSelf: "center", 
+        }}
+      >
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          sx={{ mb: 2, textAlign: "center" }}
+        >
+          Savings Percentage (This Month)
+        </Typography>
+        {summaryData.income > 0 ? (
+          <>
+            <Box sx={{ width: "100%", mb: 1 }}>
+              <Box
+                sx={{
+                  height: 20,
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: 10,
+                  overflow: "hidden",
+                }}
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: `${Math.max(
+                      0,
+                      Math.min(
+                        100,
+                        ((summaryData.income - summaryData.expense) /
+                          summaryData.income) *
+                          100
+                      )
+                    ).toFixed(1)}%`,
+                    background:
+                      "linear-gradient(90deg, #00C49F 0%, #0088FE 100%)",
+                    transition: "width 0.6s",
+                  }}
+                />
+              </Box>
+            </Box>
+            <Typography variant="subtitle1" fontWeight="bold" color="primary">
+              {Math.max(
+                0,
+                Math.min(
+                  100,
+                  ((summaryData.income - summaryData.expense) /
+                    summaryData.income) *
+                    100
+                )
+              ).toFixed(1)}
+              % saved
+            </Typography>
+          </>
+        ) : (
+          <Typography variant="body2" color= "text.secondary" >
+            No income data for this month.
+          </Typography>
+        )}
+      </Card>
       <Box
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
-          gap: 3,
+          gap: 2,
           mb: 2,
           alignItems: { xs: "center", md: "stretch" }, // Center charts on mobile
         }}
@@ -394,7 +464,7 @@ function Dashboard({transactionsData}) {
                   {getCategoryIcon(transaction.category)}
                 </ListItemIcon>
                 <ListItemText
-                  primary={transaction.note}
+                  primary={transaction.note}  
                   secondary={
                     <Box
                       component={"span"}

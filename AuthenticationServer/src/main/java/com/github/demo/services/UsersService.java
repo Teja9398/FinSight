@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UsersService {
@@ -32,12 +33,13 @@ public class UsersService {
         return repo.save(user);
     }
 
-    public String validateUser(Users user) {
+    public Map<String,Object> validateUser(Users user) {
         System.out.println(user);
         Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword()));
             if(auth.isAuthenticated()){
                 Users userInDB=repo.findUserByEmail(user.getEmail());
-                return jwtService.generateToken(userInDB);
+//                System.out.println("User found in DB: " + userInDB);
+                return Map.of("token",jwtService.generateToken(userInDB),"user",userInDB);
             }
         return null;
     }

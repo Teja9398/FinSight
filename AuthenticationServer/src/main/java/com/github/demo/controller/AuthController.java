@@ -4,6 +4,8 @@ package com.github.demo.controller;
 import com.github.demo.model.Users;
 import com.github.demo.repository.UserRepository;
 import com.github.demo.services.UsersService;
+import com.github.demo.services.OtpService;
+import com.github.demo.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,10 @@ public class AuthController {
   UserRepository repo;
   @Autowired
   UsersService service;
+  @Autowired
+  private OtpService otpService;
+  @Autowired
+  private EmailService emailService;
   @Value("${server.port}")
   private String PORT;
 
@@ -29,16 +35,19 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody Users user){
-    String token = service.validateUser(user);
+    Map<String,Object> map = service.validateUser(user);
 //    Map<String,String> UserToBeReturned = (token != null) ?
 //        Map.of("id",service.getUserId(token),"name",user.getName(),"email",user.getEmail()) :
 //        Map.of("id","","name",user.getName(),"email",user.getEmail());
 
 //Needs to be Updated
+    String token = (String) map.get("token");
+    Users userdetails = (Users) map.get("user");
+    System.out.println("User Details: " + userdetails);
     Map<String, String> userToBeReturned = new HashMap<>();
     userToBeReturned.put("id", token != null ? service.getUserId(token) : null);
-    userToBeReturned.put("name", user.getName());
-    userToBeReturned.put("email", user.getEmail());
+    userToBeReturned.put("name", userdetails.getName());
+    userToBeReturned.put("email", userdetails.getEmail());
 
     return token==null ?
         new ResponseEntity<>(Map.of("message","Invalid username or password"), HttpStatus.UNAUTHORIZED):
@@ -63,6 +72,23 @@ public class AuthController {
     return user==null?
         new ResponseEntity<>(Map.of("message","User not found"),HttpStatus.NOT_FOUND):
         ResponseEntity.ok(user);
+  }
+
+  @PostMapping("/send-otp")
+  public ResponseEntity<String> sendOtp(@RequestBody Map<String, String> payload) {
+    String email = payload.get("email");
+    String otp = otpService.generateOTP(email);
+    emailService.sendEmail(email, "Your Finsight OTP Code", "Your OTP is: " + otp);
+    return ResponseEntity.ok("OTP sent");
+  }
+
+  @PostMapping("/validate-otp")
+  public ResponseEntity<String> validateOtp(@RequestBody Map<String, String> payload) {
+    String email = payload.get("email");
+    String otp = payload.get("otp");
+    boolean isValid = otpService.validateOTP(email, otp);
+    return isValid?ResponseEntity.ok("OTP is valid") :
+        new ResponseEntity<>("Invalid or expired OTP", HttpStatus.UNAUTHORIZED);
   }
 
   @GetMapping("/getusers")

@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+
 
 
 import {
@@ -28,6 +33,19 @@ const [form, setForm] = useState({
 });
 
 const [error, setError] = useState('');
+
+ const [otpOpen, setOtpOpen] = useState(false);
+            const [otp, setOtp] = useState('');
+
+            const handleOtpOpen = () => setOtpOpen(true);
+            const handleOtpClose = () => setOtpOpen(false);
+
+            const handleOtpSubmit = () => {
+                  // Handle OTP verification logic here
+                  toast.success('OTP submitted!');
+                  setOtp('');
+                  setOtpOpen(false);
+            };
 
 const handleChange = (e) => {
       setForm({ ...form, [e.target.name]: e.target.value });
@@ -88,13 +106,11 @@ const handleSubmit = async (e) => {
             });
             setError('Signup failed. Please try again.');
       }
-
-
 };
 
 return (
       <Container component="main" maxWidth="xs">
-            <Toaster/>
+            <Toaster />
             <Paper elevation={3} sx={{ mt: 8, p: 4 }}>
                   <Box display="flex" flexDirection="column" alignItems="center">
                         <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
@@ -103,7 +119,47 @@ return (
                         <Typography component="h1" variant="h5">
                               Sign Up
                         </Typography>
-                        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+                        <Box
+                              component="form"
+                              onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    if (form.password !== form.confirmPassword) {
+                                          setError('Passwords do not match');
+                                          return;
+                                    }
+                                    // Call backend API to generate and send OTP
+                                    // try {
+                                    //       const res = await fetch('http://localhost:7000/send-otp', {
+                                    //             method: 'POST',
+                                    //             headers: { 'Content-Type': 'application/json' },
+                                    //             body: JSON.stringify({
+                                    //                   name: form.name,
+                                    //                   email: form.email,
+                                    //                   password: form.password,
+                                    //             }),
+                                    //       });
+                                    //       const data = await res.json();
+                                    //       if (res.ok && data.success) {
+                                    //             toast.success('OTP sent to your email!', {
+                                    //                   position: 'top-center',
+                                    //                   duration: 3000,
+                                    //             });
+                                    //             handleOtpOpen();
+                                    //       } else {
+                                    //             toast.error(data.message || 'Failed to send OTP.', {
+                                    //                   position: 'top-center',
+                                    //             });
+                                    //             setError(data.message || 'Failed to send OTP.');
+                                    //       }
+                                    // } catch (err) {
+                                    //       toast.error('Network error. Please try again.', {
+                                    //             position: 'top-center',
+                                    //       });
+                                    //       setError('Network error. Please try again.');
+                                    // }
+                              }}
+                              sx={{ mt: 2 }}
+                        >
                               <TextField
                                     margin="normal"
                                     required
@@ -167,6 +223,69 @@ return (
                         </Box>
                   </Box>
             </Paper>
+
+            <Dialog open={otpOpen} onClose={handleOtpClose}>
+                  <DialogTitle>OTP Verification</DialogTitle>
+                  <DialogContent>
+                        <Typography variant="body2" sx={{ mb: 2 }}>
+                              Please enter the OTP sent to your email to complete registration.
+                        </Typography>
+                        <TextField
+                              autoFocus
+                              margin="dense"
+                              label="OTP"
+                              type="text"
+                              fullWidth
+                              value={otp}
+                              onChange={e => setOtp(e.target.value)}
+                        />
+                  </DialogContent>
+                  <DialogActions>
+                        <Button onClick={handleOtpClose}>Cancel</Button>
+                        <Button
+                              onClick={async () => {
+                                    // Call backend API to validate OTP and register user
+                                    try {
+                                          const res = await fetch('http://localhost:7000/verify-otp', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                      email: form.email,
+                                                      otp: otp,
+                                                }),
+                                          });
+                                          const data = await res.json();
+                                          if (res.ok && data.success) {
+                                                toast.success('Signup successful!', {
+                                                      position: 'top-center',
+                                                      duration: 3000,
+                                                });
+                                                setForm({
+                                                      name: '',
+                                                      email: '',
+                                                      password: '',
+                                                      confirmPassword: '',
+                                                });
+                                                setOtp('');
+                                                setOtpOpen(false);
+                                                window.location.href = '/login';
+                                          } else {
+                                                toast.error(data.message || 'Invalid OTP. Please try again.', {
+                                                      position: 'top-center',
+                                                });
+                                          }
+                                    } catch (err) {
+                                          toast.error('Network error. Please try again.', {
+                                                position: 'top-center',
+                                          });
+                                    }
+                              }}
+                              variant="contained"
+                        >
+                              Verify OTP
+                        </Button>
+                  </DialogActions>
+            </Dialog>
       </Container>
 );
 };

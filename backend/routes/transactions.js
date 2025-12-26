@@ -36,7 +36,7 @@ router.post("/add",verifyToken,async (req, res) => {
   transaction
     .save()
     .then((saved) => {
-      console.log("Transaction saved successfully: ");
+      // console.log("Transaction saved successfully: ");
       console.log("Saved Transaction: ",saved);
       res.status(201).json({ message: "Transaction added successfully",transaction:saved });
     })
@@ -202,16 +202,22 @@ router.get("/totalincomeandexpenses",verifyToken,async(req,res)=>{
             }
         ])
           // res.send(data);
-          const formattedData = {income:null,expense:null};
-          data.map(item =>{
-            if(item.income!=null){
-              formattedData.income = item.income
+          let income = 0;
+          let expense = 0;
+          data.forEach(item => {
+            if (item.income && item.income > 0) {
+              income = item.income;
             }
-            if(item.expense!=null){
-              formattedData.expense = item.expense;
+            if (item.expense && item.expense > 0) {
+              expense = item.expense;
             }
-          })
-          res.send(formattedData)
+          });
+          // console.log("Get income and expenses Formatted Data: ", { income, expense });
+          
+          res.json({
+            income,
+            expense
+          });
 
       }catch(err){
         res.send({message:`failed to fetchData:${err.message}` })

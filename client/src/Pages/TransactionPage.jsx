@@ -151,9 +151,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
 
   const handleVoiceSubmit = async () => {
     setLoading(true);
-    
     try{
-
       // Here you can process the voice text and create a transaction
       const response = await fetch("http://localhost:8000/validate", {
         method: "POST",
@@ -181,9 +179,11 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
           }),
         })
         
-        const transaction = await response.json();
-        // console.log("Transaction from voice:", transaction);
-        if(transaction)handleAddTransactionviaVoice(transaction);
+        const transaction = JSON.parse(await response.json());
+        console.log("Transaction from voice:", transaction);
+        if(!!transaction){
+          handleAddTransactionviaVoice(transaction);
+        }
         else throw new error("An error occurred while processing your voice input. Retry again!",{
           duration: 5000,
         })
@@ -238,7 +238,6 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
       toast.success("Transaction added successfully", {
         duration: 3000,
       });
-      setCheckedItems([false, ...checkedItems]);
       setFormData({ date: "", description: "", category: "", amount: "" });
       setOpenManualEntryDialog(false);
       setLoading(false);
@@ -247,36 +246,45 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
 
 
   const handleAddTransactionviaVoice = async (transaction) => {
-    if (
-      transaction.date &&
-      transaction.description &&
-      transaction.category &&
-      transaction.amount
-    ) {
-      const response = await fetch("http://localhost:5000/transactions/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          date: new Date().toISOString().split("T")[0],
-          userId: localStorage.getItem("userId"),
-          note: transaction.description,
-          type: transaction.type,
-          source: "voice",
-          category: transaction.category,
-          amount: parseFloat(transaction.amount),
-        }),
+    try{
+      if (
+        transaction.note &&
+        transaction.category &&
+        transaction.amount
+      ) {
+        const response = await fetch("http://localhost:5000/transactions/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            date: new Date().toISOString().split("T")[0],
+            userId: localStorage.getItem("userId"),
+            note: transaction.note,
+            type: transaction.type,
+            source: "voice",
+            category: transaction.category,
+            amount: parseFloat(transaction.amount),
+          }),
+        });
+        const newTxn = await response.json();
+        console.log(newTxn);
+  
+        setTransactions([newTxn.transaction, ...transactions]); // Add to top
+        toast.success("Transaction added successfully", {
+          duration: 3000,
+        });
+        setOpenVoiceDialog(false);
+      }
+    }catch (error) {
+      console.error("Error adding transaction via voice:", error);
+      toast.error("An error occurred while adding the transaction. Please try again.", {
+        duration: 5000,
       });
-      const newTxn = await response.json();
-      console.log(newTxn);
-
-      setTransactions([newTxn.transaction, ...transactions]); // Add to top
-      toast.success("Transaction added successfully", {
-        duration: 3000,
-      });
-      setOpenVoiceDialog(false);
+    }finally{
+      setVoiceText("");
+      setLoading(false);
     }
   }
  

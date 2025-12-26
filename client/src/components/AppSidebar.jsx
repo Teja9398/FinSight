@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Drawer,
@@ -43,6 +43,26 @@ function AppSidebar({ window }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const { user, logout } = useAuth();
+  const [summaryData, setSummaryData] = React.useState({});
+  const [netBalance, SetNetBalance] = React.useState(0);
+
+  useEffect(() => {
+    fetch(`http://localhost:5000/transactions/totalincomeandexpenses`, {
+      headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("summary data: ", data);
+        setSummaryData(data);
+      });
+    fetch(`http://localhost:5000/transactions/getnetbalance`, {
+      headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        SetNetBalance(data.netbalance);
+      }); //Need to be filled
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -129,7 +149,7 @@ function AppSidebar({ window }) {
                 variant="body2"
                 sx={{ color: "#1a7f37", fontWeight: 600 }}
               >
-                This Month
+                Income This Month
               </Typography>
             }
             secondary={
@@ -137,7 +157,7 @@ function AppSidebar({ window }) {
                 variant="h6"
                 sx={{ color: "#1a7f37", fontWeight: 700 }}
               >
-                +$2,450
+                +₹{summaryData.income}
               </Typography>
             }
           />
@@ -152,7 +172,7 @@ function AppSidebar({ window }) {
                 variant="body2"
                 sx={{ color: "#1a4fff", fontWeight: 600 }}
               >
-                Balance
+                Net Balance
               </Typography>
             }
             secondary={
@@ -160,7 +180,7 @@ function AppSidebar({ window }) {
                 variant="h6"
                 sx={{ color: "#1a4fff", fontWeight: 700 }}
               >
-                $12,847
+                ₹{netBalance}
               </Typography>
             }
           />
@@ -244,7 +264,8 @@ function AppSidebar({ window }) {
               </Box>
               <Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {user ? user.name?user.name:user.email.split("@")[0] : "User Name"}
+                  {/* {user ? user.name?user.name:user.email.split("@")[0] : "User Name"} */}
+                  {user && user.name}
                   {console.log("user:", user)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
