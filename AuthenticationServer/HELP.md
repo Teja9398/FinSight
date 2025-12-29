@@ -26,9 +26,9 @@ If you manually switch to a different parent and actually want the inheritance, 
 
 
 ### Environmental Variables in this module
-* MAIL_USERNAME - username of the email for generating OTP
-* MAIL_PASSWORD -password for the same      
-* JWT_SECRET - secret key for JWT authentication
-* DB_HOST - database server host address
-* DB_PORT - database server port 
-* DB_NAME - name of the database
+* [MAIL_USERNAME - username of the email for generating OTP]
+* [MAIL_PASSWORD -password for the same ]     
+* [JWT_SECRET - secret key for JWT authentication]
+* [DB_HOST - database server host address]
+* [DB_PORT - database server port ]
+* [DB_NAME - name of the database]
