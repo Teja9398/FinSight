@@ -81,6 +81,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<finalName>FinSightAuthServer</finalName>
+
 	</build>
 
 </project>
