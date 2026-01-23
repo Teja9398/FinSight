@@ -9,9 +9,14 @@ require('dotenv').config()
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var transactionsRouter = require('./routes/transactions');
+var connectDB = require('./config/connectDB');
+
+// Connect to MongoDB
+connectDB(); 
 
 
 var app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

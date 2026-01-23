@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const { userModel } = require('./schemas');
 const verifyToken = require('../middlewares/verifyToken');
 const url = 'mongodb://localhost:27017/finsightDB';
+const connectDB = require('../config/connectDB');
 require('dotenv').config();
 
 router.use(express.json());
@@ -24,13 +25,6 @@ router.post('/register', async (req, res) => {
       data.passwordHash = await bcrypt.hash(data.passwordHash, 10);
 
       const user = new userModel(data);
-      mongoose.connect(url)
-      .then(() => {
-            console.log('Connected to MongoDB');
-      })
-      .catch(err => {
-            console.error('Error connecting to MongoDB', err);
-      });
       const fetch = await userModel.findOne({ email: data.email });
       console.log(fetch);
       
@@ -59,13 +53,18 @@ router.post('/register', async (req, res) => {
 //       return next();
 // }
 
-router.post('/login', async (req, res) => {
-      const data = req.body;
-      mongoose.connect(url).then(() => {
-            console.log('Connected to MongoDB');
-      }).catch(err => {
-            console.error('Error connecting to MongoDB', err);
+router.get('/getAllUsers', async (req, res) =>{
+      
+      userModel.find().then((users) => {
+            res.status(200).json(users);
+      }).catch((err) => {
+            res.status(500).json({ message: 'Error fetching users' });
       });
+
+}); 
+
+router.post('/login', async (req, res) => {
+  
       const userExists = await userModel.findOne({ email: data.email });
       if (!userExists) {
             return res.status(400).send({message:'User not found'});

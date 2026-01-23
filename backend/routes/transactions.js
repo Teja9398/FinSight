@@ -16,7 +16,7 @@ router.get("/", function (req, res) {
 
 router.get("/test-authentication",verifyToken, (req, res) => {
   // console.log("User from token:", req.user);
-  res.json({ message: "This is a test route", user: req.user });
+  res.json({ message: `This is a test route .Server connected to DB`, user: req.user });
 })
 
 router.post("/add",verifyToken,async (req, res) => {
@@ -24,14 +24,14 @@ router.post("/add",verifyToken,async (req, res) => {
   data["userId"] = req.user.id; // Add userId from the token
   // console.log(data);
   // res.send(data);
-  mongoose
-  .connect("mongodb://localhost:27017/finsightDB")
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.error("Error connecting to MongoDB", err.message);
-  });
+  // mongoose
+  // .connect("mongodb://localhost:27017/finsightDB")
+  // .then(() => {
+  //   console.log("Connected to MongoDB");
+  // })
+  // .catch((err) => {
+  //   console.error("Error connecting to MongoDB", err.message);
+  // });
   const transaction = new transactionModel(data);
   transaction
     .save()
@@ -51,14 +51,14 @@ router.post("/add",verifyToken,async (req, res) => {
 router.get("/get", verifyToken, async (req, res) => {
   // console.log(req.user.id);
 
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+  // mongoose
+  //   .connect("mongodb://localhost:27017/finsightDB")
+  //   .then(() => {
+  //     console.log("Connected to MongoDB");
+  //   })
+  //   .catch((err) => {
+  //     console.error("Error connecting to MongoDB", err.message);
+  //   });
   const transactions = await transactionModel
     .find({ userId: req.user.id })
     .sort({ date: -1 });
@@ -67,14 +67,8 @@ router.get("/get", verifyToken, async (req, res) => {
 });
 
 router.get("/get/:id", verifyToken,async (req, res) => {
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+  //
+
   const transaction = await transactionModel.findById(req.params.id);
   if (!transaction) {
     return res.status(404).json({ message: "Transaction not found" });
@@ -84,14 +78,7 @@ router.get("/get/:id", verifyToken,async (req, res) => {
 
 router.put("/update/:id",verifyToken,async (req, res) => {
   console.log("Update request body:", req.body);
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+  //
   const transaction = await transactionModel.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -105,14 +92,7 @@ router.put("/update/:id",verifyToken,async (req, res) => {
 });
 
 router.delete("/delete",verifyToken, async (req, res) => {
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+  //
   const transaction = await transactionModel.deleteMany({
     _id: { $in: req.body.ids },
   });
@@ -124,27 +104,13 @@ router.delete("/delete",verifyToken, async (req, res) => {
 });
 
 router.get("/gettest", async (req, res) => {
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+ 
   const transactions = await transactionModel.find().sort({ date: -1 });
   res.status(200).json(transactions);
 });
 
 router.get("/getbycat",verifyToken,async (req, res) => {
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("Error connecting to MongoDB", err.message);
-    });
+  //
   const data = await transactionModel.aggregate([
     {
       $match: {
@@ -164,12 +130,12 @@ router.get("/getbycat",verifyToken,async (req, res) => {
 });
 
 router.get("/totalincomeandexpenses",verifyToken,async(req,res)=>{
-  mongoose.connect("mongodb://localhost:27017/finsightDB")
-  .then(()=>{
-    console.log("Connected to DB")
-  }).catch((err)=>{
-    console.log("failed to connect to db:", err.message);
-  })
+  // mongoose.connect("mongodb://localhost:27017/finsightDB")
+  // .then(()=>{
+  //   console.log("Connected to DB")
+  // }).catch((err)=>{
+  //   console.log("failed to connect to db:", err.message);
+  // })
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(),now.getMonth(),1);
     const endOfMonth = new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59,999);
@@ -225,14 +191,14 @@ router.get("/totalincomeandexpenses",verifyToken,async(req,res)=>{
 })
 
 router.get("/getincomeandexp",verifyToken ,async (req, res) => {
-  mongoose
-    .connect("mongodb://localhost:27017/finsightDB")
-    .then(() => {
-      console.log("Connected to DB");
-    })
-    .catch((err) => {
-      console.log("error connecting to DB: ", err.message);
-    });
+  // mongoose
+  //   .connect("mongodb://localhost:27017/finsightDB")
+  //   .then(() => {
+  //     console.log("Connected to DB");
+  //   })
+  //   .catch((err) => {
+  //     console.log("error connecting to DB: ", err.message);
+  //   });
   // console.log(req.params.id);
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -307,12 +273,12 @@ router.get("/getincomeandexp",verifyToken ,async (req, res) => {
 router.get('/getnetbalance',verifyToken,async (req,res)=>{
   console.log("Header: ",req.user);
   
-  mongoose.connect('mongodb://localhost:27017/finsightDB')
-  .then(()=>{console.log('connected to DB');
-  })
-  .catch(err=>{
-    console.log("error connecting to DB: ",err.message);
-  })
+  // mongoose.connect('mongodb://localhost:27017/finsightDB')
+  // .then(()=>{console.log('connected to DB');
+  // })
+  // .catch(err=>{
+  //   console.log("error connecting to DB: ",err.message);
+  // })
   try{
     const data = await transactionModel.aggregate([
       {
