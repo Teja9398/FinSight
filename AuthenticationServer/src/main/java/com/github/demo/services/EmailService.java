@@ -13,14 +13,20 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    public void sendEmail(String to, String subject, String message) {
-        System.out.println("$$$$$$$$$$$$$$$$FROM EMAIL IS $$$$$$$$$$$$$$$$$$$$ = " + fromEmail);
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom(fromEmail);
-        mailMessage.setTo(to);
-        mailMessage.setSubject(subject);
-        mailMessage.setText(message + "\n\n VALID ONLY FOR 5 MINUTES.");
-        mailSender.send(mailMessage);
+    public boolean sendEmail(String to, String subject, String message) {
+        try {
+            System.out.println("$$$$$$$$$$$$$$$$FROM EMAIL IS $$$$$$$$$$$$$$$$$$$$ = " + fromEmail);
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom(fromEmail);
+            mailMessage.setTo(to);
+            mailMessage.setSubject(subject);
+            mailMessage.setText(message + "\n\n VALID ONLY FOR 5 MINUTES.");
+            mailSender.send(mailMessage);
+            return true;
+        } catch (Exception e) {
+            e.getMessage();
+            return false;
+        }
     }
 }
 

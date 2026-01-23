@@ -57,10 +57,38 @@ public class UsersService {
         return repo.findAll();
     }
 
+    public Users getUserByEmail(String email){
+        Users user =  repo.findUserByEmail(email);
+        if(user != null){
+            return user;
+        }
+        return null;
+    }
+
+    public Users updatePassword(String email, String oldPassword,String newPassword)throws PasswordNotMatchException {
+        Users user = repo.findUserByEmail(email);
+        if(user != null){
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+            if(!encoder.matches(oldPassword,user.getPassword())){
+                throw new PasswordNotMatchException("Old password does not match.");
+            }
+            String newEncodedPassword = encoder.encode(newPassword);
+            user.setPassword(newEncodedPassword);
+            return repo.save(user);
+        }
+        return null;
+    }
+
 }
 
 class UserAlreadyExistsException extends Exception {
     public UserAlreadyExistsException(String message) {
+        super(message);
+    }
+}
+
+class PasswordNotMatchException extends Exception {
+    public PasswordNotMatchException(String message) {
         super(message);
     }
 }

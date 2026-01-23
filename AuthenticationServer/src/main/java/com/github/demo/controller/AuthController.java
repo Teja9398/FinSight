@@ -1,8 +1,10 @@
 package com.github.demo.controller;
 
 
+import com.github.demo.model.UserPrincipal;
 import com.github.demo.model.Users;
 import com.github.demo.repository.UserRepository;
+import com.github.demo.services.MyUserDetailsService;
 import com.github.demo.services.UsersService;
 import com.github.demo.services.OtpService;
 import com.github.demo.services.EmailService;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -48,6 +51,7 @@ public class AuthController {
     userToBeReturned.put("id", token != null ? service.getUserId(token) : null);
     userToBeReturned.put("name", userdetails.getName());
     userToBeReturned.put("email", userdetails.getEmail());
+    userToBeReturned.put("createdAt", userdetails.getCreatedAt().toString());
 
     return token==null ?
         new ResponseEntity<>(Map.of("message","Invalid username or password"), HttpStatus.UNAUTHORIZED):
@@ -75,24 +79,55 @@ public class AuthController {
   }
 
   @PostMapping("/send-otp")
-  public ResponseEntity<String> sendOtp(@RequestBody Map<String, String> payload) {
+  public ResponseEntity<?> sendOtp(@RequestBody Map<String, String> payload) {
     String email = payload.get("email");
     String otp = otpService.generateOTP(email);
-    emailService.sendEmail(email, "Your Finsight OTP Code", "Your OTP is: " + otp);
-    return ResponseEntity.ok("OTP sent");
+    if(emailService.sendEmail(email, "Your Finsight OTP Code", "Your OTP is: " + otp)){
+      return ResponseEntity.ok(Map.of("message", "OTP sent to email","success", true));
+    }else{
+      return new ResponseEntity<>(Map.of("message", "Failed to send OTP","success",false), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @PostMapping("/validate-otp")
-  public ResponseEntity<String> validateOtp(@RequestBody Map<String, String> payload) {
+  public ResponseEntity<?> validateOtp(@RequestBody Map<String, String> payload) {
     String email = payload.get("email");
     String otp = payload.get("otp");
     boolean isValid = otpService.validateOTP(email, otp);
-    return isValid?ResponseEntity.ok("OTP is valid") :
-        new ResponseEntity<>("Invalid or expired OTP", HttpStatus.UNAUTHORIZED);
+    return isValid?
+            ResponseEntity.ok().body(Map.of("message", "OTP is valid","success", true)) :
+        new ResponseEntity<>( Map.of("message","Invalid or expired OTP","success",false),HttpStatus.UNAUTHORIZED);
   }
 
   @GetMapping("/getusers")
   public List<Users> getAllUsers()  {
     return service.getUsers();
   }
+
+  @GetMapping("/getuseremails")
+  public Map<String,List<String>> getAllUseremails()  {
+    List<String> emails = new ArrayList<>();
+    for (Users user : service.getUsers()){
+      emails.add(user.getEmail());
+    }
+    return Map.of("emails",emails);
+  }
+
+  @PutMapping("/reset-password")
+  public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request){
+      String email = request.get("email");
+      String newPassword = request.get("newPassword");
+      String oldPassword = request.get("oldPassword");
+        System.out.println("Resetting password for email: " + email);
+    try{
+      Users updatedUser = service.updatePassword(email, oldPassword, newPassword);
+      return updatedUser != null ?
+              ResponseEntity.ok(Map.of("message", "Password updated successfully", "user", updatedUser)) :
+              new ResponseEntity<>(Map.of("message", "User not found or password update failed"), HttpStatus.NOT_FOUND);
+    }
+    catch (Exception e){
+      return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+  }
+
 }

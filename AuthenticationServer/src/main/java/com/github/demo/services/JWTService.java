@@ -47,7 +47,6 @@ public class JWTService {
     }
 
     public String getSecretKey(){
-        System.out.println("Secret Key: " + secretKey);
         return  secretKey;
     }
 

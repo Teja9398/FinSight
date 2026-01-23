@@ -8,6 +8,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+import java.util.Date;
 
 @Document(collection = "users")
 
@@ -28,12 +32,17 @@ public class Users {
     @Field("passwordHash")
     private String password;
 
+    @JsonProperty
+    @Field("createdAt")
+    private LocalDate createdAt = LocalDate.MAX;
+
     public Users(){}
     public Users(String id,String username, String email, String password) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.createdAt = LocalDate.now();
     }
 
     public String getName() {
@@ -76,6 +85,11 @@ public class Users {
                 "username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", createdAt='" + createdAt + '\'' +
                 '}';
+    }
+
+    public LocalDate getCreatedAt() {
+        return createdAt;
     }
 }

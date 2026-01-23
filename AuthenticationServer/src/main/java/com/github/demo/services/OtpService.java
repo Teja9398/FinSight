@@ -13,7 +13,6 @@ public class OtpService {
     public String generateOTP(String identifier) {
         String otp = String.valueOf(100000 + new Random().nextInt(900000));
         otpStorage.put(identifier, new OTPDetails(otp, Instant.now().plusSeconds(300)));// valid for 5 mins
-        System.out.println("Generated OTP: "+otp);
         return otp;
     }
 
