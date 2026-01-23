@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pickle
@@ -38,11 +38,11 @@ def validate_sentence(request:SentenceRequest):
       print(f"response: {y}")
       return True if y == 'valid' else False
 
-@app.post("/convert")
+@app.post("/convert",status_code=200)
 def convert_sentence(request:sentence):
       sentence = [request.sentence] or "I bought groceries for $50 on 2023-10-01"
       data = {}
-      data["model"] = "qwen/qwen3-30b-a3b:free"
+      data["model"] = "liquid/lfm-2.5-1.2b-thinking:free"
       data["messages"] = [
             {
                   "role": "user",
@@ -59,6 +59,7 @@ def convert_sentence(request:sentence):
       response = requests.post("https://openrouter.ai/api/v1/chat/completions", json=data, headers=headers)
       if response.status_code != 200:
             print(f"Error: {response.status_code} - {response.text}")
-            return {"error": "Failed to convert sentence"}
+            raise HTTPException(status_code=400, detail="Failed to convert sentence")
+            # return {"error": "Failed to convert sentence"}
       print( response.json().get("choices")[0].get("message").get("content"))
       return response.json().get("choices")[0].get("message").get("content")
