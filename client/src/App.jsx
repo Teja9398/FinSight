@@ -6,6 +6,7 @@ import Dashboard from "./Pages/Dashboard.jsx";
 import Login from "./Pages/Login.jsx";
 import Signup from "./Pages/Signup.jsx";
 import Layout from "./Pages/Layout.jsx";
+import Profile from "./Pages/Profile.jsx";
 
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
@@ -127,11 +128,20 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile/>
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </Router>
   );
 }
+
 
 function App() {
   return (

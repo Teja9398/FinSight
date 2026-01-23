@@ -11,7 +11,7 @@ return (
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                   <header style={{ minWidth: "100%", height: 80, background: "#fff", borderBottom: "1px solid #e0e0e0" ,p: 4 }}>
                         {/* Empty header for spacing and appearance */}
-                        <Header />
+                        {/* <Header /> */}
                   </header>
                   <main
                         style={{

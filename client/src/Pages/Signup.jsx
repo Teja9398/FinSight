@@ -18,6 +18,7 @@ Link,
 Avatar,
 Grid,
 Paper,
+duration,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { Toaster,toast } from 'react-hot-toast';
@@ -52,41 +53,48 @@ const handleChange = (e) => {
       setError('');
 };
 
-const handleSubmit = async (e) => {
-      e.preventDefault();
+const handleSignup = async (e) => {
+      // e.preventDefault();
       if (form.password !== form.confirmPassword) {
             setError('Passwords do not match');
             return;
       }
       // Handle signup logic here (API call, etc.)
       // Reset form or redirect on success
-      // fetch('http://localhost:7000/signup', {
-      //       method:'POST',
-      //       headers:{'Content-Type': 'application/json'},
-      //       body: JSON.stringify({
-      //             name: form.name,
-      //             email: form.email,
-      //             password: form.password,
-      //             authProvider: 'local'
-      //       }),
-      // })
-      // .then((response) => {
-      //       if(response.status === 201) {
-      //             alert('User registered successfully');
-      //             setForm({
-      //                   name: '',
-      //                   email: '',
-      //                   password: '',
-      //                   confirmPassword: '',
-      //             });
-      //             window.location.href = '/'; // Redirect to login page
-      //       }else{
-      //             return response.json().then(data => {
-      //                   throw new Error(data.message || 'Signup failed');
-      //             });
-      //       }
+      fetch('http://localhost:7000/signup', {
+            method:'POST',
+            headers:{'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                  name: form.name,
+                  email: form.email,
+                  password: form.password,
+                  authProvider: 'local'
+            }),
+      })
+      .then((response) => {
+            if(response.status === 201) {
+                  toast.success('User registered successfully', {
+                        position: 'top-center',
+                        duration: 5000,
+                  });
+                  setForm({
+                        name: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
+                  });
+                  window.location.href = '/'; // Redirect to login page
+            }else{
+                  toast.error('Signup failed. Please try again.', {
+                        position: 'top-center',
+                        duration: 7000
+                  });
+                  return response.json().then(data => {
+                        throw new Error(data.message || 'Signup failed');
+                  });
+            }
 
-      // })
+      })
       const result = await signup(form.name, form.email, form.password)
       if (result) {
             setForm({
@@ -105,6 +113,17 @@ const handleSubmit = async (e) => {
                   position: 'top-center',
             });
             setError('Signup failed. Please try again.');
+      }
+};
+
+const chcekUserExistence = async () => {
+      try {
+            const response = await fetch('http://localhost:7000/getuseremails');
+            const data = await response.json();
+            return data.includes(form.email);
+      } catch (error) {
+            console.error('Error checking user existence:', error);
+            return false;
       }
 };
 
@@ -129,28 +148,38 @@ return (
                                     }
                                     // Call backend API to generate and send OTP
                                     // try {
-                                    //       const res = await fetch('http://localhost:7000/send-otp', {
-                                    //             method: 'POST',
-                                    //             headers: { 'Content-Type': 'application/json' },
-                                    //             body: JSON.stringify({
-                                    //                   name: form.name,
-                                    //                   email: form.email,
-                                    //                   password: form.password,
-                                    //             }),
-                                    //       });
-                                    //       const data = await res.json();
-                                    //       if (res.ok && data.success) {
-                                    //             toast.success('OTP sent to your email!', {
-                                    //                   position: 'top-center',
-                                    //                   duration: 3000,
-                                    //             });
-                                    //             handleOtpOpen();
-                                    //       } else {
-                                    //             toast.error(data.message || 'Failed to send OTP.', {
-                                    //                   position: 'top-center',
-                                    //             });
-                                    //             setError(data.message || 'Failed to send OTP.');
-                                    //       }
+                                    if(chcekUserExistence){
+                                          toast.error('User with this email already exists', {
+                                                position: 'top-center',
+                                                duration: 5000,
+                                          });
+                                          setError('User with this email already exists');
+                                          return;
+                                    }
+                                          const res = await fetch('http://localhost:7000/send-otp', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                      name: form.name,
+                                                      email: form.email,
+                                                      password: form.password,
+                                                }),
+                                          });
+                                          const data = await res.json();    
+                                          // console.log('=====res OTP:', res.ok?true:false,'\n\n====== res data OTP:',data);
+                                            
+                                          if (res.ok && data.success) {
+                                                toast.success('OTP sent to your email!', {
+                                                      position: 'top-center',
+                                                      duration: 5000,
+                                                });
+                                                handleOtpOpen();
+                                          } else {
+                                                toast.error(data.message || 'Failed to send OTP.', {
+                                                      position: 'top-center',
+                                                });
+                                                setError(data.message || 'Failed to send OTP.');
+                                          }
                                     // } catch (err) {
                                     //       toast.error('Network error. Please try again.', {
                                     //             position: 'top-center',
@@ -198,7 +227,14 @@ return (
                                     name="confirmPassword"
                                     type="password"
                                     value={form.confirmPassword}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                          handleChange(e);
+                                          if (e.target.value !== form.password) {
+                                                setError('Passwords do not match');
+                                          } else {
+                                                setError('');
+                                          }
+                                    }}
                               />
                               {error && (
                                     <Typography color="error" variant="body2" sx={{ mt: 1 }}>
@@ -234,7 +270,8 @@ return (
                               autoFocus
                               margin="dense"
                               label="OTP"
-                              type="text"
+                              type="number"
+                              pattern="^\d{6}$"
                               fullWidth
                               value={otp}
                               onChange={e => setOtp(e.target.value)}
@@ -246,7 +283,7 @@ return (
                               onClick={async () => {
                                     // Call backend API to validate OTP and register user
                                     try {
-                                          const res = await fetch('http://localhost:7000/verify-otp', {
+                                          const res = await fetch('http://localhost:7000/validate-otp', {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({
@@ -255,10 +292,13 @@ return (
                                                 }),
                                           });
                                           const data = await res.json();
+                                          console.log("verificaion data:",data,"\n res:",res.ok?true:false);
+                                          
                                           if (res.ok && data.success) {
+                                                handleSignup();
                                                 toast.success('Signup successful!', {
                                                       position: 'top-center',
-                                                      duration: 3000,
+                                                      duration: 5000,
                                                 });
                                                 setForm({
                                                       name: '',
@@ -268,7 +308,7 @@ return (
                                                 });
                                                 setOtp('');
                                                 setOtpOpen(false);
-                                                window.location.href = '/login';
+                                                // window.location.href = '/login';
                                           } else {
                                                 toast.error(data.message || 'Invalid OTP. Please try again.', {
                                                       position: 'top-center',
