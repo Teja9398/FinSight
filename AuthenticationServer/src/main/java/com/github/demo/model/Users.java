@@ -34,7 +34,7 @@ public class Users {
 
     @JsonProperty
     @Field("createdAt")
-    private LocalDate createdAt = LocalDate.MAX;
+    private LocalDate createdAt = LocalDate.now();
 
     public Users(){}
     public Users(String id,String username, String email, String password) {
