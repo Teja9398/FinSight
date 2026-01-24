@@ -41,6 +41,7 @@ function AppContent() {
     "Transportation",
     "Medical & Healthcare",
     "Food and drinks",
+    "Shopping",
     "other",
   ];
 

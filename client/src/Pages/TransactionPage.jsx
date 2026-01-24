@@ -666,7 +666,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
             rows={4}
             value={voiceText}
             onChange={(e) => setVoiceText(e.target.value)}
-            placeholder="Speak or type your transaction details..."
+            placeholder={`Speak or type your transaction details...\nE.g., 'Bought groceries for 500 rupees'`}
             sx={{ mt: 2 }}
           />
           <IconButton

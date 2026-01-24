@@ -74,7 +74,7 @@ const getCategoryIcon = (category) => {
 };
 
 function Dashboard({transactionsData}) {
-  const {user} = useAuth();
+  const {user} = useAuth(); 
   const [data, setData] = useState([
     { amount: 200, category: "Food" },
     { amount: 300, category: "Transport" },

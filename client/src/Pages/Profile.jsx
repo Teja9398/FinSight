@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLoading } from '../contexts/LoadingContext';
 import {
   Container,
   Card,
@@ -34,7 +35,7 @@ const Profile = () => {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const { user } = useAuth();
-  
+  const {setLoading} = useLoading();
   const [formData, setFormData] = useState(null);
 
   useEffect(() => {
@@ -49,7 +50,10 @@ const Profile = () => {
   };
 
   const handleSave = () => {
+    console.log(formData);
+    
     setIsEditing(false);
+
   };
 
   const handleCancel = () => {
@@ -81,12 +85,13 @@ const Profile = () => {
       return;
     }
 
-    // if (passwordData.newPassword.length < 6) {
-    //   setPasswordError('New password must be at least 6 characters');
-    //   return;
-    // }
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
 
     try {
+      setLoading(true);
       const response = await fetch('http://localhost:7000/reset-password', {
         method: 'PUT',
         headers: {
@@ -117,8 +122,10 @@ const Profile = () => {
         const error = await response.json();
         setPasswordError(error.message || 'Failed to change password');
       }
+      setLoading(false);
     } catch (err) {
       setPasswordError('Error changing password: ' + err.message);
+      setLoading(false);
     }
   };
 

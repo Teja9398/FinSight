@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
                   console.log('Login response:', data);
                   
                   if (data.token && !isTokenExpired(data.token)) {
-                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('token', data.token);      
                         localStorage.setItem('user', JSON.stringify(data.user));
                         setUser(data.user); // Set user data in state
                         return true; // Indicate login success
@@ -71,9 +71,9 @@ export const AuthProvider = ({ children }) => {
             }
       };
 
-      // Mock signup function
+      
       const signup = async (name,email, password) => {
-            // Replace with real API call
+            
             try {
                   const response = await fetch('http://localhost:7000/signup', {
                         method: 'POST',

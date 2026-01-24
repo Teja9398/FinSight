@@ -21,11 +21,12 @@ Paper,
 duration,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useLoading } from '../contexts/LoadingContext.jsx';
 import { Toaster,toast } from 'react-hot-toast';
 
 const Signup = () => {
 const { signup } = useAuth();
-
+const { setLoading } = useLoading();
 const [form, setForm] = useState({
       name: '',
       email: '',
@@ -61,40 +62,44 @@ const handleSignup = async (e) => {
       }
       // Handle signup logic here (API call, etc.)
       // Reset form or redirect on success
-      fetch('http://localhost:7000/signup', {
-            method:'POST',
-            headers:{'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                  name: form.name,
-                  email: form.email,
-                  password: form.password,
-                  authProvider: 'local'
-            }),
-      })
-      .then((response) => {
-            if(response.status === 201) {
-                  toast.success('User registered successfully', {
-                        position: 'top-center',
-                        duration: 5000,
-                  });
-                  setForm({
-                        name: '',
-                        email: '',
-                        password: '',
-                        confirmPassword: '',
-                  });
-                  window.location.href = '/'; // Redirect to login page
-            }else{
-                  toast.error('Signup failed. Please try again.', {
-                        position: 'top-center',
-                        duration: 7000
-                  });
-                  return response.json().then(data => {
-                        throw new Error(data.message || 'Signup failed');
-                  });
-            }
+      // setLoading(true);
+      // fetch('http://localhost:7000/signup', {
+      //       method:'POST',
+      //       headers:{'Content-Type': 'application/json'},
+      //       body: JSON.stringify({
+      //             name: form.name,
+      //             email: form.email,
+      //             password: form.password,
+      //             authProvider: 'local'
+      //       }),
+      // })
+      // .then((response) => {
+      //       if(response.status === 201) {
+      //             toast.success('User registered successfully', {
+      //                   position: 'top-center',
+      //                   duration: 5000,
+      //             });
+      //             setForm({
+      //                   name: '',
+      //                   email: '',
+      //                   password: '',
+      //                   confirmPassword: '',
+      //             });
+      //             setLoading(false);
+      //             window.location.href = '/login'; // Redirect to login page
+      //       }else{
+      //             setLoading(false);
+      //             toast.error('Signup failed. Please try again.', {
+      //                   position: 'top-center',
+      //                   duration: 7000
+      //             });
+      //             return response.json().then(data => {
+      //                   throw new Error(data.message || 'Signup failed');
+      //             });
+      //       }
 
-      })
+      // })
+      setLoading(true);
       const result = await signup(form.name, form.email, form.password)
       if (result) {
             setForm({
@@ -113,15 +118,25 @@ const handleSignup = async (e) => {
                   position: 'top-center',
             });
             setError('Signup failed. Please try again.');
+            
       }
+      setLoading(false); 
 };
 
-const chcekUserExistence = async () => {
+const checkUserExistence = async () => {
       try {
             const response = await fetch('http://localhost:7000/getuseremails');
             const data = await response.json();
+            if(data === null || data === undefined){
+                  toast.error('Network Error', {
+                        position: 'top-center',
+                        duration: 5000,
+                  });
+                  return null;
+            }
             return data.includes(form.email);
       } catch (error) {
+            console.log("error checking user existence",error);
             console.error('Error checking user existence:', error);
             return false;
       }
@@ -147,15 +162,24 @@ return (
                                           return;
                                     }
                                     // Call backend API to generate and send OTP
-                                    // try {
-                                    if(chcekUserExistence){
+                                    try {
+                                   
+                                    // if(checkUserExistence == null){
+                                    //       toast.error('Network Error. Please try again.', {
+                                    //             position: 'top-center',
+                                    //             duration: 5000,
+                                    //       });
+                                    //       return;
+                                    // }
+                                    if(await checkUserExistence()){
                                           toast.error('User with this email already exists', {
                                                 position: 'top-center',
                                                 duration: 5000,
                                           });
                                           setError('User with this email already exists');
                                           return;
-                                    }
+                                    }     
+                                          setLoading(true);
                                           const res = await fetch('http://localhost:7000/send-otp', {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
@@ -166,6 +190,7 @@ return (
                                                 }),
                                           });
                                           const data = await res.json();    
+                                          setLoading(false);
                                           // console.log('=====res OTP:', res.ok?true:false,'\n\n====== res data OTP:',data);
                                             
                                           if (res.ok && data.success) {
@@ -173,6 +198,7 @@ return (
                                                       position: 'top-center',
                                                       duration: 5000,
                                                 });
+                                                
                                                 handleOtpOpen();
                                           } else {
                                                 toast.error(data.message || 'Failed to send OTP.', {
@@ -180,12 +206,13 @@ return (
                                                 });
                                                 setError(data.message || 'Failed to send OTP.');
                                           }
-                                    // } catch (err) {
-                                    //       toast.error('Network error. Please try again.', {
-                                    //             position: 'top-center',
-                                    //       });
-                                    //       setError('Network error. Please try again.');
-                                    // }
+                                    } catch (err) {
+                                          toast.error('Network error. Please try again.', {
+                                                position: 'top-center',
+                                          });
+                                          // setError('Network error. Please try again.');
+                                          setLoading(false);
+                                    }
                               }}
                               sx={{ mt: 2 }}
                         >
@@ -217,7 +244,16 @@ return (
                                     name="password"
                                     type="password"
                                     value={form.password}
-                                    onChange={handleChange}
+                                    onChange={e=>{
+                                          handleChange(e)
+                                          // console.log("in form password",e.target.name == "password");
+                                          
+                                          if(form.password.length>0){
+                                                if(e.target.value !== form.confirmPassword){
+                                                      setError('Passwords do not match');
+                                                }
+                                          }
+                                    }}
                               />
                               <TextField
                                     margin="normal"
@@ -240,7 +276,7 @@ return (
                                     <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                                           {error}
                                     </Typography>
-                              )}
+                              )} 
                               <Button
                                     type="submit"
                                     fullWidth
@@ -270,11 +306,14 @@ return (
                               autoFocus
                               margin="dense"
                               label="OTP"
-                              type="number"
+                              type="text"
                               pattern="^\d{6}$"
                               fullWidth
                               value={otp}
-                              onChange={e => setOtp(e.target.value)}
+                              onChange={e => {
+                                    const value = e.target.value.replace(/\D/g, '').slice(0, 6); 
+                                    setOtp(value);
+                              }}
                         />
                   </DialogContent>
                   <DialogActions>
@@ -283,6 +322,7 @@ return (
                               onClick={async () => {
                                     // Call backend API to validate OTP and register user
                                     try {
+                                          setLoading(true);
                                           const res = await fetch('http://localhost:7000/validate-otp', {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
@@ -319,6 +359,8 @@ return (
                                                 position: 'top-center',
                                           });
                                     }
+                                    setLoading(false);
+
                               }}
                               variant="contained"
                         >
