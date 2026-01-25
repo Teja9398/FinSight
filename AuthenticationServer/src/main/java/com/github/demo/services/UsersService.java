@@ -79,6 +79,15 @@ public class UsersService {
         return null;
     }
 
+    public Users updateUser(Users updatedUser)throws Exception{
+        Users user = repo.findUserByEmail(updatedUser.getEmail());
+        if(user == null ) {
+            throw new Exception("User not found.");
+        }
+        user.setName(updatedUser.getName());    
+        return repo.save(user);
+    }
+
 }
 
 class UserAlreadyExistsException extends Exception {

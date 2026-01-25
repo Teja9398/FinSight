@@ -2,6 +2,7 @@ package com.github.demo.configuration;
 
 import com.github.demo.services.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -31,6 +32,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig  {
+    @Value("${FRONTEND_URL}")
+    private String FRONTEND_URL;
     @Autowired
     private MyUserDetailsService userDetailsService;
     @Autowired
@@ -40,7 +43,7 @@ public class SecurityConfig  {
         return http
                 .csrf(customizer->customizer.disable())
                 .authorizeHttpRequests(request ->request
-                        .requestMatchers("/signup","/login","/status","/send-otp","/validate-otp").permitAll()
+                        .requestMatchers("/signup","/login","/status","/send-otp","/validate-otp","/getuseremails").permitAll()
                         .anyRequest().authenticated())
                 .cors(Customizer.withDefaults())
 //                .formLogin(Customizer.withDefaults())
@@ -76,7 +79,7 @@ public class SecurityConfig  {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration cors = new CorsConfiguration();
 
-        cors.setAllowedOrigins(List.of("http://localhost:5173"));
+        cors.setAllowedOrigins(List.of(FRONTEND_URL));
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cors.setAllowedHeaders(List.of("*"));
         cors.setAllowCredentials(true);

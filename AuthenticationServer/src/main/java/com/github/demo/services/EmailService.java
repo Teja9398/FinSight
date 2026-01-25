@@ -15,7 +15,6 @@ public class EmailService {
 
     public boolean sendEmail(String to, String subject, String message) {
         try {
-            System.out.println("$$$$$$$$$$$$$$$$FROM EMAIL IS $$$$$$$$$$$$$$$$$$$$ = " + fromEmail);
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(fromEmail);
             mailMessage.setTo(to);

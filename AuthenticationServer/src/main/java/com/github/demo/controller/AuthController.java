@@ -128,6 +128,20 @@ public class AuthController {
     catch (Exception e){
       return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
+
   }
+
+  @PutMapping("/update-user")
+    public ResponseEntity<?> updateUser(@RequestBody Users user){
+        try{
+        Users updatedUser = service.updateUser(user);
+        return updatedUser != null ?
+                ResponseEntity.ok(Map.of("message", "User updated successfully", "user", updatedUser, "success", true)) :
+                new ResponseEntity<>(Map.of("message", "User not found or update failed","success",false), HttpStatus.NOT_FOUND);
+        }
+        catch (Exception e){
+        return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }

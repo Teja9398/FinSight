@@ -32,3 +32,4 @@ If you manually switch to a different parent and actually want the inheritance, 
 * DB_HOST - database server host address
 * DB_PORT - database server port 
 * DB_NAME - name of the database
+* FRONTEND_URL - URL of the frontend application for CORS 
