@@ -39,6 +39,7 @@ build/
 .env
 .env.local
 .env.*.local
+.run/
 EnnvironmentVariablesToBeSet
 
 # OS
