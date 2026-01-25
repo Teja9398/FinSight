@@ -38,6 +38,11 @@ router.post('/register', async (req, res) => {
       }
 });
 
+router.get('/profile', verifyToken, async (req, res) => {
+      const userId = req.user.id;
+      const user = await userModel.findById(userId);
+})
+
 // function verifyToken(req, res, next) {
 //       const token = req.headers.authorization;
 //       if (!token) {
