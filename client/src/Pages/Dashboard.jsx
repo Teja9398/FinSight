@@ -79,7 +79,7 @@ function Dashboard({transactionsData}) {
     { amount: 200, category: "Food" },
     { amount: 300, category: "Transport" },
   ]);
-
+  const BACKEND_SERVER = import.meta.env.VITE_BACKEND_SERVER_URL;
   const [recentTransactions, setRecentTransactions] = useState(transactionsData.slice(0, 5));
   const [lineData, setLineData] = useState();
   const [incomeData, setIncomeData] = useState();
@@ -108,7 +108,7 @@ function Dashboard({transactionsData}) {
 
   useEffect(() => {
 
-    fetch(`http://localhost:5000/transactions/getbycat`, {
+    fetch(`${BACKEND_SERVER}/transactions/getbycat`, {
       headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((response) => response.json())
@@ -117,7 +117,7 @@ function Dashboard({transactionsData}) {
         setData(data);
       });
 
-    fetch(`http://localhost:5000/transactions/getincomeandexp`, {
+    fetch(`${BACKEND_SERVER}/transactions/getincomeandexp`, {
       headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((response) => response.json())
@@ -126,15 +126,15 @@ function Dashboard({transactionsData}) {
         setLineData(data);
       });
 
-    fetch(`http://localhost:5000/transactions/totalincomeandexpenses`, {
+    fetch(`${BACKEND_SERVER}/transactions/totalincomeandexpenses`, {
       headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("summary data: ",data);
+        // console.log("summary data: ",data);
         setSummaryData(data);
       });
-    fetch(`http://localhost:5000/transactions/getnetbalance`, {
+    fetch(`${BACKEND_SERVER}/transactions/getnetbalance`, {
       headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((response) => response.json())

@@ -23,6 +23,8 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { useAuth } from "../contexts/AuthContext";
 
+const BACKEND_SERVER = import.meta.env.VITE_BACKEND_SERVER_URL;
+
 const drawerWidth = 300;
 
 const navItems = [
@@ -47,7 +49,7 @@ function AppSidebar({ window }) {
   const [netBalance, SetNetBalance] = React.useState(0);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/transactions/totalincomeandexpenses`, {
+    fetch(`${BACKEND_SERVER}/transactions/totalincomeandexpenses`, {
       headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((response) => response.json())
@@ -55,7 +57,7 @@ function AppSidebar({ window }) {
         console.log("summary data: ", data);
         setSummaryData(data);
       });
-    fetch(`http://localhost:5000/transactions/getnetbalance`, {
+    fetch(`${BACKEND_SERVER}/transactions/getnetbalance`, {
       headers: { authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((response) => response.json())

@@ -24,6 +24,8 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
 import toast from 'react-hot-toast';
 
+const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER_URL;
+
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -34,7 +36,7 @@ const Profile = () => {
   });
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const {setLoading} = useLoading();
   const [formData, setFormData] = useState(null);
 
@@ -49,10 +51,37 @@ const Profile = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    console.log(formData);
-    
-    setIsEditing(false);
+  const handleSave = async () => {
+    // console.log("in handlesave",formData);
+    // console.log("in handlesave Pws",user);
+    setLoading(true);
+    formData.passwordHash = user.passwordHash;
+    setLoading(true);
+    try{
+      const response = await fetch(`${process.env.AUTH_SERVER}/update-user`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(formData),
+      });
+      if(response.ok){
+        const newUser = await response.json();
+        if(await refreshUser(newUser["user"])){
+          setIsEditing(false);
+          setLoading(false);
+          toast.success("Profile updated successfully",{duration:5000});
+        }
+        
+      }
+      // setLoading(false);
+    }
+    catch(err){
+      setLoading(false);
+      toast.error("Error updating profile, please try again.",{duration:5000});
+      console.error("Error updating profile:", err);
+    }
 
   };
 
@@ -92,7 +121,7 @@ const Profile = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:7000/reset-password', {
+      const response = await fetch(`${process.env.AUTH_SERVER}/reset-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +134,7 @@ const Profile = () => {
         }),
       });
        const data = await response.json();
-       console.log(data);
+      //  console.log(data);
       if (response.ok) {
         setPasswordSuccess('Password changed successfully');
         toast.success('Password changed successfully', { duration: 5000 });

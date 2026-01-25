@@ -20,6 +20,8 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { LoadingProvider } from "./contexts/LoadingContext.jsx";
 import GlobalLoadingOverlay from "./components/GlobalLoadingOverlay.jsx";
 
+const BACKEND_SERVER = import.meta.env.VITE_BACKEND_SERVER_URL;
+
 function AppContent() {
   const { isAuthenticated } = useAuth();
 
@@ -66,7 +68,7 @@ function AppContent() {
   };
   const [transactions, setTransactions] = useState([]);
   useEffect(() => {
-    fetch("http://localhost:5000/transactions/get", {
+    fetch(`${BACKEND_SERVER}/transactions/get`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -80,6 +82,9 @@ function AppContent() {
         console.error("Error fetching transactions:", error);
       });
   }, []);
+  
+
+
   const token = localStorage.getItem("token");
 
   return (

@@ -29,6 +29,8 @@ import Delete from "@mui/icons-material/Delete";
 import toast, { Toaster } from "react-hot-toast";
 import { useLoading } from "../contexts/LoadingContext";
 
+const BACKEND_SERVER = import.meta.env.VITE_BACKEND_SERVER_URL;
+const MODEL_SERVER = import.meta.env.VITE_MODEL_SERVER_URL;
 
 function groupTransactions(transactions) {
   const groups = {};
@@ -153,7 +155,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
     setLoading(true);
     try{
       // Here you can process the voice text and create a transaction
-      const response = await fetch("http://localhost:8000/validate", {
+      const response = await fetch(`${MODEL_SERVER}/validate`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -169,7 +171,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
         duration: 5000,
       })
       else {
-        const response = await fetch("http://localhost:8000/convert",{
+        const response = await fetch(`${MODEL_SERVER}/convert`,{
           method: "POST",
           headers:{
             "content-type": "application/json",
@@ -180,7 +182,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
         })
         
         const transaction = JSON.parse(await response.json());
-        console.log("Transaction from voice:", transaction);
+        // console.log("Transaction from voice:", transaction);
         if(!!transaction){
           handleAddTransactionviaVoice(transaction);
         }
@@ -215,7 +217,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
       formData.category &&
       formData.amount
     ) {
-      const response = await fetch("http://localhost:5000/transactions/add", {
+      const response = await fetch(`${BACKEND_SERVER}/transactions/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -232,7 +234,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
         }),
       });
       const newTxn = await response.json();
-      console.log(newTxn);
+      // console.log(newTxn);
 
       setTransactions([newTxn.transaction, ...transactions]); // Add to top
       toast.success("Transaction added successfully", {
@@ -252,7 +254,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
         transaction.category &&
         transaction.amount
       ) {
-        const response = await fetch("http://localhost:5000/transactions/add", {
+        const response = await fetch(`${BACKEND_SERVER}/transactions/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -269,7 +271,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
           }),
         });
         const newTxn = await response.json();
-        console.log(newTxn);
+        // console.log(newTxn);
   
         setTransactions([newTxn.transaction, ...transactions]); // Add to top
         toast.success("Transaction added successfully", {
@@ -324,9 +326,9 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
 
 
   const handleDeleteTransaction = () => {
-    console.log("@ handleDelete Transaction: ", selectedTransaction);
+    // console.log("@ handleDelete Transaction: ", selectedTransaction);
 
-    fetch("http://localhost:5000/transactions/delete", {
+    fetch(`${BACKEND_SERVER}/transactions/delete`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -356,7 +358,7 @@ function TransactionPage({ transactionsData, categories, getCategoryIcon }) {
 
   const handleEditSave = async () => {
     const response = await fetch(
-      `http://localhost:5000/transactions/update/${editFormData._id}`,
+      `${BACKEND_SERVER}/transactions/update/${editFormData._id}`,
       {
         method: "PUT",
         headers: {

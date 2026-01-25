@@ -14,6 +14,9 @@ import toast,{Toaster}  from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useLoading } from "../contexts/LoadingContext.jsx";
 
+const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER_URL;
+
+
 
 const Login = () => {
 
@@ -28,38 +31,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
-    console.log(form);
-    // fetch("http://localhost:7000/login", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     email: form.email,
-    //     password: form.password,
-    //   }),
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log("Login successful:", data);
-    //     localStorage.setItem("userData", JSON.stringify(data));
-    //     if (data.token) {
-    //       localStorage.setItem("token", data.token);
-    //       // localStorage.setItem("userId", data.userId);
-    //       // alert("Login successful");
-    //       toast.success("Login successful",{
-    //         position: "top-center",
-    //         duration: 3000,
-    //       });
-    //       window.location.href = "/";
-    //     } else {
-    //       alert("Login failed");
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     toast.error("Login failed. Please check your credentials.",{
-    //       position: "top-center",});
-    //     console.error("Error during login:", error);
-    //   });
-    const result = await login(form.email, form.password);
+    // console.log(form);
+    const result = await login(form.email, form.password); 
     if (result) {
       
       toast.success("Login successful", {

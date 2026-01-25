@@ -24,6 +24,9 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useLoading } from '../contexts/LoadingContext.jsx';
 import { Toaster,toast } from 'react-hot-toast';
 
+const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER_URL;
+
+
 const Signup = () => {
 const { signup } = useAuth();
 const { setLoading } = useLoading();
@@ -33,6 +36,7 @@ const [form, setForm] = useState({
       password: '',
       confirmPassword: '',
 });
+
 
 const [error, setError] = useState('');
 
@@ -60,45 +64,6 @@ const handleSignup = async (e) => {
             setError('Passwords do not match');
             return;
       }
-      // Handle signup logic here (API call, etc.)
-      // Reset form or redirect on success
-      // setLoading(true);
-      // fetch('http://localhost:7000/signup', {
-      //       method:'POST',
-      //       headers:{'Content-Type': 'application/json'},
-      //       body: JSON.stringify({
-      //             name: form.name,
-      //             email: form.email,
-      //             password: form.password,
-      //             authProvider: 'local'
-      //       }),
-      // })
-      // .then((response) => {
-      //       if(response.status === 201) {
-      //             toast.success('User registered successfully', {
-      //                   position: 'top-center',
-      //                   duration: 5000,
-      //             });
-      //             setForm({
-      //                   name: '',
-      //                   email: '',
-      //                   password: '',
-      //                   confirmPassword: '',
-      //             });
-      //             setLoading(false);
-      //             window.location.href = '/login'; // Redirect to login page
-      //       }else{
-      //             setLoading(false);
-      //             toast.error('Signup failed. Please try again.', {
-      //                   position: 'top-center',
-      //                   duration: 7000
-      //             });
-      //             return response.json().then(data => {
-      //                   throw new Error(data.message || 'Signup failed');
-      //             });
-      //       }
-
-      // })
       setLoading(true);
       const result = await signup(form.name, form.email, form.password)
       if (result) {
@@ -112,7 +77,7 @@ const handleSignup = async (e) => {
                   position: 'top-center',
                   duration: 3000,
             });
-            window.location.href = '/login'; // Redirect to login page
+            window.location.href = '/login'; 
       } else {
             toast.error('Signup failed. Please try again.', {
                   position: 'top-center',
@@ -125,8 +90,10 @@ const handleSignup = async (e) => {
 
 const checkUserExistence = async () => {
       try {
-            const response = await fetch('http://localhost:7000/getuseremails');
+            const response = await fetch(`${AUTH_SERVER}/getuseremails`);
+		// console.log("response",response);
             const data = await response.json();
+		// console.log("data",data.emails);
             if(data === null || data === undefined){
                   toast.error('Network Error', {
                         position: 'top-center',
@@ -134,7 +101,7 @@ const checkUserExistence = async () => {
                   });
                   return null;
             }
-            return data.includes(form.email);
+            return data.emails.includes(form.email);
       } catch (error) {
             console.log("error checking user existence",error);
             console.error('Error checking user existence:', error);
@@ -180,7 +147,7 @@ return (
                                           return;
                                     }     
                                           setLoading(true);
-                                          const res = await fetch('http://localhost:7000/send-otp', {
+                                          const res = await fetch(`${AUTH_SERVER}/send-otp`, {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({
@@ -323,7 +290,7 @@ return (
                                     // Call backend API to validate OTP and register user
                                     try {
                                           setLoading(true);
-                                          const res = await fetch('http://localhost:7000/validate-otp', {
+                                          const res = await fetch(`${AUTH_SERVER}/validate-otp`, {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({
