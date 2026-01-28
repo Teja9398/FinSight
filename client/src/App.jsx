@@ -19,6 +19,8 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { LoadingProvider } from "./contexts/LoadingContext.jsx";
 import GlobalLoadingOverlay from "./components/GlobalLoadingOverlay.jsx";
+import { Navigate } from "react-router-dom";
+
 
 const BACKEND_SERVER = import.meta.env.VITE_BACKEND_SERVER_URL;
 
@@ -31,7 +33,7 @@ function AppContent() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     );
@@ -82,8 +84,6 @@ function AppContent() {
         console.error("Error fetching transactions:", error);
       });
   }, []);
-  
-
 
   const token = localStorage.getItem("token");
 
@@ -138,7 +138,7 @@ function AppContent() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <Profile/>
+                <Profile />
               </ProtectedRoute>
             }
           />
@@ -147,7 +147,6 @@ function AppContent() {
     </Router>
   );
 }
-
 
 function App() {
   return (
