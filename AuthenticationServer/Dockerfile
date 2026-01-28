@@ -1,15 +1,27 @@
+# -------- Stage 1: Build the application --------
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
-# Use an OpenJDK base image
-FROM eclipse-temurin:17-jdk-jammy
+WORKDIR /build
 
-#LABEL authors="DharmaTeja"
-# Set the working directory inside the container
+# Copy only pom.xml first (dependency caching)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy source code
+COPY src ./src
+
+# Build JAR
+RUN mvn clean package -DskipTests
+
+
+# -------- Stage 2: Run the application --------
+FROM eclipse-temurin:17-jre-jammy
+
 WORKDIR /app
 
-# Copy the JAR file into the container
-COPY target/FinSightAuthServer.jar app.jar
-# Expose the application port
+# Copy jar from builder stage
+COPY --from=builder /build/target/*.jar app.jar
+
 EXPOSE 7000
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
