@@ -23,21 +23,9 @@ import { Navigate } from "react-router-dom";
 
 
 const BACKEND_SERVER = import.meta.env.VITE_BACKEND_SERVER_URL;
-
 function AppContent() {
   const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated()) {
-    return (
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    );
-  }
+  const token = localStorage.getItem("token");
 
   const categories = [
     "Income",
@@ -68,85 +56,78 @@ function AppContent() {
         return <AttachMoneyIcon />;
     }
   };
+
   const [transactions, setTransactions] = useState([]);
+
   useEffect(() => {
+    if (!token) return;
+
     fetch(`${BACKEND_SERVER}/transactions/get`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
-      .then((data) => {
-        setTransactions(data);
-        // setCheckedItems(new Array(data.length).fill(false));
-      })
-      .catch((error) => {
-        console.error("Error fetching transactions:", error);
-      });
-  }, []);
-
-  const token = localStorage.getItem("token");
+      .then((res) => res.json())
+      .then(setTransactions)
+      .catch(console.error);
+  }, [token]);
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
+        {!isAuthenticated() ? (
+          <>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </>
+        ) : (
           <Route
             path="/"
             element={
               <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              index
+              element={
                 <Dashboard
                   transactionsData={transactions}
                   categories={categories}
                   getCategoryIcon={getCategoryIcon}
                 />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
+              }
+            />
+            <Route
+              path="dashboard"
+              element={
                 <Dashboard
                   transactionsData={transactions}
                   categories={categories}
                   getCategoryIcon={getCategoryIcon}
                 />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/transactions"
-            element={
-              <ProtectedRoute>
+              }
+            />
+            <Route
+              path="transactions"
+              element={
                 <TransactionPage
                   transactionsData={transactions}
                   categories={categories}
                   getCategoryIcon={getCategoryIcon}
                 />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
+              }
+            />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+        )}
       </Routes>
     </Router>
   );
 }
+
 
 function App() {
   return (

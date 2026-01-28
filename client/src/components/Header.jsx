@@ -49,7 +49,7 @@ function Header() {
   return (
     <AppBar position="static" sx={{ minHeight: 48, backgroundColor: '#3a8dde',display:{xs:"none" ,md:"flex"}}}>
       <Container maxWidth="100vw" >
-        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 48, minHeight: { xs: 48, sm: 56 } }}>
+        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',  minHeight: { xs: 48, sm: 56 } }}>
           <Typography
             variant="h6"
             noWrap
