@@ -24,7 +24,7 @@ const transactionSchema = new Schema({
       category: String,
       date: Date,
       note: String,
-      source: { type: String, enum: ['manual', 'nlp', 'ocr', 'voice'] },
+      source: { type: String, enum: ['manual','text', 'voice'] },
       tags: [String],
       createdAt: { type: Date, default: Date.now }
 })

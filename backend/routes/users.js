@@ -4,7 +4,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { userModel } = require('./schemas');
+const verifyToken = require('../middlewares/verifyToken');
 const url = 'mongodb://localhost:27017/finsightDB';
+const connectDB = require('../config/connectDB');
 require('dotenv').config();
 
 router.use(express.json());
@@ -23,13 +25,6 @@ router.post('/register', async (req, res) => {
       data.passwordHash = await bcrypt.hash(data.passwordHash, 10);
 
       const user = new userModel(data);
-      mongoose.connect(url)
-      .then(() => {
-            console.log('Connected to MongoDB');
-      })
-      .catch(err => {
-            console.error('Error connecting to MongoDB', err);
-      });
       const fetch = await userModel.findOne({ email: data.email });
       console.log(fetch);
       
@@ -43,28 +38,38 @@ router.post('/register', async (req, res) => {
       }
 });
 
-function verifyToken(req, res, next) {
-      const token = req.headers.authorization;
-      if (!token) {
-            return res.status(403).send('A token is required for authentication');
-      }
-      try {
-            const decoded = jwt.verify(token, "Access125");
-            console.log(decoded);
-            req.user = decoded;
-      } catch (err) {
-            return res.status(401).send('Invalid Token');
-      }
-      return next();
-}
+router.get('/profile', verifyToken, async (req, res) => {
+      const userId = req.user.id;
+      const user = await userModel.findById(userId);
+})
+
+// function verifyToken(req, res, next) {
+//       const token = req.headers.authorization;
+//       if (!token) {
+//             return res.status(403).send('A token is required for authentication');
+//       }
+//       try {
+//             const decoded = jwt.verify(token, "Access125");
+//             console.log(decoded);
+//             req.user = decoded;
+//       } catch (err) {
+//             return res.status(401).send('Invalid Token');
+//       }
+//       return next();
+// }
+
+router.get('/getAllUsers', async (req, res) =>{
+      
+      userModel.find().then((users) => {
+            res.status(200).json(users);
+      }).catch((err) => {
+            res.status(500).json({ message: 'Error fetching users' });
+      });
+
+}); 
 
 router.post('/login', async (req, res) => {
-      const data = req.body;
-      mongoose.connect(url).then(() => {
-            console.log('Connected to MongoDB');
-      }).catch(err => {
-            console.error('Error connecting to MongoDB', err);
-      });
+  
       const userExists = await userModel.findOne({ email: data.email });
       if (!userExists) {
             return res.status(400).send({message:'User not found'});
@@ -72,7 +77,7 @@ router.post('/login', async (req, res) => {
             const isMatch = await bcrypt.compare(data.passwordHash,userExists.passwordHash);
             if (isMatch) {
                   const token = jwt.sign({ id: userExists._id,email:data.email }, "Access125");
-                  res.status(200).send({message:'Login successful',token:token,userId:userExists._id});
+                  res.status(200).send({message:'Login successful',token:token,userId:userExists._id}); 
             }
             else {
                   res.status(400).send('Invalid password');
